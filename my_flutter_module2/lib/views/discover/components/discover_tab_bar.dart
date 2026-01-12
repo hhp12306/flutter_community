@@ -3,34 +3,44 @@ import '../../../models/tab_model.dart';
 
 /// 发现页面Tab栏组件
 /// 支持Tab过多时滑动显示
+/// 支持themeStyle切换文字颜色（1为黑色，2为白色）
 class DiscoverTabBar extends StatelessWidget {
   final List<TabModel> tabs;
   final TabController controller;
   final ValueChanged<int>? onTabTap;
+  final int? themeStyle; // 主题样式：1为黑色，2为白色
 
   const DiscoverTabBar({
     Key? key,
     required this.tabs,
     required this.controller,
     this.onTabTap,
+    this.themeStyle,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // 根据themeStyle决定文字颜色：1为黑色，2为白色，默认黑色
+    final Color labelColor = themeStyle == 2 ? Colors.white : Colors.black;
+    final Color unselectedLabelColor = themeStyle == 2 
+        ? Colors.white.withOpacity(0.7) 
+        : Colors.black54;
+    final Color indicatorColor = themeStyle == 2 ? Colors.white : Colors.black;
+
     return TabBar(
       controller: controller,
       isScrollable: true, // 始终可滑动
       indicatorSize: TabBarIndicatorSize.label, // 下划线长度跟随文字
       indicator: _RoundedUnderlineTabIndicator(
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           width: 2.0,
-          color: Colors.black,
+          color: indicatorColor,
         ),
         insets: EdgeInsets.zero,
       ),
       dividerColor: Colors.transparent, // 移除底部分割线
-      labelColor: Colors.black, // 选中文字颜色为黑色
-      unselectedLabelColor: Colors.black54, // 未选中文字颜色为半透明黑色
+      labelColor: labelColor, // 选中文字颜色
+      unselectedLabelColor: unselectedLabelColor, // 未选中文字颜色
       labelStyle: const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w500,

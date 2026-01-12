@@ -15,6 +15,7 @@ class ArticleModel {
   final bool isFeatured; // 是否精选
   final bool isLiked; // 是否已点赞
   final bool isCollected; // 是否已收藏
+  final bool isFollowed; // 是否已关注作者
   final int publishTime;
   final String? content;
   final List<String>? images; // 图片列表
@@ -35,6 +36,7 @@ class ArticleModel {
     this.isFeatured = false,
     this.isLiked = false,
     this.isCollected = false,
+    this.isFollowed = false,
     required this.publishTime,
     this.content,
     this.images,
@@ -57,6 +59,7 @@ class ArticleModel {
       isFeatured: json['isFeatured'] ?? false,
       isLiked: json['isLiked'] ?? false,
       isCollected: json['isCollected'] ?? false,
+      isFollowed: json['isFollowed'] ?? false,
       publishTime: json['publishTime'] ?? 0,
       content: json['content'],
       images: json['images'] != null 
@@ -82,6 +85,7 @@ class ArticleModel {
       'isFeatured': isFeatured,
       'isLiked': isLiked,
       'isCollected': isCollected,
+      'isFollowed': isFollowed,
       'publishTime': publishTime,
       'content': content,
       'images': images,

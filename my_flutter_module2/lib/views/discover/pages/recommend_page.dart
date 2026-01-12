@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:provider/provider.dart';
 import '../../../models/banner_model.dart';
 import '../../../models/diamond_model.dart';
 import '../../../models/article_model.dart';
+import '../../../models/component_model.dart';
 import '../../discover/components/banner_carousel.dart';
 import '../../discover/components/diamond_grid.dart';
 import '../../discover/components/article_list.dart';
+import '../../discover/components/component_factory.dart';
+import '../../discover/discover_provider.dart';
 
 /// 推荐页面
 /// 包含：Banner轮播图、金刚区、功能组件区、精彩资讯（瀑布流）
@@ -23,6 +27,7 @@ class _RecommendPageState extends State<RecommendPage> {
   List<BannerModel> _banners = [];
   List<DiamondModel> _diamonds = [];
   List<ArticleModel> _articles = [];
+  List<ComponentModel> _components = []; // 功能组件列表
   bool _isLoading = false;
   int _currentPage = 1; // 当前页码
   bool _hasMore = true; // 是否还有更多数据
@@ -98,6 +103,11 @@ class _RecommendPageState extends State<RecommendPage> {
         iconUrl: 'https://example.com/icon$index.png',
         linkUrl: 'https://example.com/link$index',
       ));
+      
+      // 加载功能组件（根据后端配置）
+      if (isRefresh) {
+        _components = _loadComponents();
+      }
       
       // 刷新时重置文章列表
       if (isRefresh) {
@@ -194,7 +204,17 @@ class _RecommendPageState extends State<RecommendPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 12.0), // Tab和Banner之间的间距
-                child: BannerCarousel(banners: _banners),
+                child: Consumer<DiscoverProvider>(
+                  builder: (context, provider, child) {
+                    return BannerCarousel(
+                      banners: _banners,
+                      onThemeStyleChanged: (themeStyle) {
+                        // Banner切换时更新themeStyle
+                        provider.updateThemeStyle(themeStyle);
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           
@@ -205,7 +225,8 @@ class _RecommendPageState extends State<RecommendPage> {
             ),
           
           // 功能组件区（热门话题、车型圈列表、专题合集等）
-          // TODO: 根据后端配置动态显示组件
+          // 根据后端配置动态显示组件，按sort排序
+          ..._buildComponentSlivers(),
           
           // 精彩资讯（瀑布流）
           if (_articles.isNotEmpty)
@@ -213,6 +234,125 @@ class _RecommendPageState extends State<RecommendPage> {
         ],
       ),
     );
+  }
+
+  /// 构建功能组件Sliver列表
+  List<Widget> _buildComponentSlivers() {
+    final visibleComponents = _components
+        .where((c) => c.visible)
+        .toList()
+      ..sort((a, b) => a.sort.compareTo(b.sort));
+    
+    return visibleComponents.map((component) {
+      final widget = ComponentFactory.createComponent(component);
+      return widget != null
+          ? SliverToBoxAdapter(child: widget)
+          : const SliverToBoxAdapter(child: SizedBox.shrink());
+    }).toList();
+  }
+
+  /// 加载功能组件（模拟数据，实际应该从后端获取）
+  List<ComponentModel> _loadComponents() {
+    return [
+      // 热门话题
+      ComponentModel(
+        id: 'hot_topics_1',
+        key: 'hot_topics',
+        name: '热门话题',
+        sort: 1,
+        visible: true,
+        config: {
+          'topics': [
+            {
+              'id': 'topic_1',
+              'title': '新能源车使用心得',
+              'imageUrl': 'https://example.com/topic1.jpg',
+              'joinCount': 1234,
+            },
+            {
+              'id': 'topic_2',
+              'title': '自驾游分享',
+              'imageUrl': 'https://example.com/topic2.jpg',
+              'joinCount': 5678,
+            },
+            {
+              'id': 'topic_3',
+              'title': '保养经验交流',
+              'imageUrl': 'https://example.com/topic3.jpg',
+              'joinCount': 9012,
+            },
+          ],
+        },
+      ),
+      // 车型圈列表
+      ComponentModel(
+        id: 'car_circle_1',
+        key: 'car_circle_list',
+        name: '车型圈',
+        sort: 2,
+        visible: true,
+        config: {
+          'circles': [
+            {
+              'id': 'circle_1',
+              'name': '汉EV车友圈',
+              'iconUrl': 'https://example.com/circle1.png',
+              'memberCount': 5000,
+              'postCount': 1200,
+            },
+            {
+              'id': 'circle_2',
+              'name': '唐DM车友圈',
+              'iconUrl': 'https://example.com/circle2.png',
+              'memberCount': 3000,
+              'postCount': 800,
+            },
+          ],
+        },
+      ),
+      // 专题合集
+      ComponentModel(
+        id: 'collection_1',
+        key: 'topic_collection',
+        name: '专题合集',
+        sort: 3,
+        visible: true,
+        config: {
+          'title': '精选专题',
+          'collections': [
+            {
+              'id': 'collection_1',
+              'title': '2024年新车盘点',
+              'coverUrl': 'https://example.com/collection1.jpg',
+              'description': '最新车型资讯',
+              'articleCount': 50,
+            },
+            {
+              'id': 'collection_2',
+              'title': '用车技巧大全',
+              'coverUrl': 'https://example.com/collection2.jpg',
+              'description': '实用用车指南',
+              'articleCount': 30,
+            },
+          ],
+        },
+      ),
+      // 单个专题
+      ComponentModel(
+        id: 'topic_1',
+        key: 'topic',
+        name: '热门专题',
+        sort: 4,
+        visible: true,
+        config: {
+          'id': 'topic_single_1',
+          'title': '智能驾驶体验',
+          'coverUrl': 'https://example.com/topic_single.jpg',
+          'description': '探索智能驾驶的乐趣',
+          'articleCount': 25,
+        },
+      ),
+    ];
   }
 }
 

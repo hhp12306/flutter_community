@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "发现",
+    "title": "发现"
+  },
+  "discover": {
+    "recommend": "推荐",
+    "community": "社区",
+    "club": "俱乐部",
+    "smartDrive": "智驾",
+    "activity": "活动",
+    "news": "资讯",
+    "circle": "圈子",
+    "live": "直播",
+    "reputation": "口碑"
+  },
+  "common": {
+    "search": "搜索",
+    "message": "消息",
+    "like": "点赞",
+    "collect": "收藏",
+    "comment": "评论",
+    "share": "分享",
+    "refresh": "刷新",
+    "loading": "加载中...",
+    "loadMore": "加载更多",
+    "noMore": "没有更多了",
+    "pullToRefresh": "下拉刷新",
+    "releaseToRefresh": "释放刷新",
+    "refreshing": "正在刷新...",
+    "refreshComplete": "刷新完成",
+    "error": "错误",
+    "retry": "重试",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "publish": "发布",
+    "draft": "草稿",
+    "top": "置顶",
+    "featured": "精选",
+    "latest": "最新",
+    "following": "关注"
+  },
+  "article": {
+    "title": "精彩资讯",
+    "author": "发布人",
+    "publishTime": "发布时间",
+    "likeCount": "点赞数",
+    "collectCount": "收藏数",
+    "commentCount": "评论数"
+  },
+  "community": {
+    "post": "发帖",
+    "featured": "精选",
+    "latest": "最新",
+    "following": "关注"
+  },
+  "post": {
+    "title": "发帖",
+    "text": "文字",
+    "image": "图片",
+    "video": "视频",
+    "publish": "发布",
+    "saveDraft": "保存草稿"
+  },
+  "video": {
+    "play": "播放",
+    "pause": "暂停",
+    "fullscreen": "全屏"
+  }
+}

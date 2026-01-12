@@ -5,6 +5,7 @@ class BannerModel {
   final String? linkUrl;
   final String? title;
   final int sort;
+  final int? themeStyle; // 主题样式：1为黑色，2为白色
 
   BannerModel({
     required this.id,
@@ -12,6 +13,7 @@ class BannerModel {
     this.linkUrl,
     this.title,
     this.sort = 0,
+    this.themeStyle,
   });
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class BannerModel {
       linkUrl: json['linkUrl'],
       title: json['title'],
       sort: json['sort'] ?? 0,
+      themeStyle: json['themeStyle'],
     );
   }
 
@@ -31,6 +34,7 @@ class BannerModel {
       'linkUrl': linkUrl,
       'title': title,
       'sort': sort,
+      'themeStyle': themeStyle,
     };
   }
 }

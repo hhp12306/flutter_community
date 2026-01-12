@@ -13,6 +13,7 @@ import 'pages/circle_page.dart';
 import 'pages/live_page.dart';
 import 'pages/reputation_page.dart';
 import '../../models/tab_model.dart';
+import '../../utils/route_guard.dart';
 
 /// 发现页面（主页面）
 /// 包含顶部Tab栏和各个Tab页面内容
@@ -134,63 +135,65 @@ class _DiscoverPageState extends State<DiscoverPage>
 
     return ChangeNotifierProvider.value(
       value: _provider,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: DiscoverAppBar(
-          onSearchTap: () {
-            // 跳转搜索页面
-          },
-          onMessageTap: () {
-            // 跳转消息中心
-          },
-          child: Consumer<DiscoverProvider>(
+      child: Builder(
+        builder: (context) {
+          return Consumer<DiscoverProvider>(
             builder: (context, provider, child) {
-              if (provider.visibleTabs.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              // 如果Tab数量变化，需要重新创建控制器
-              if (provider.visibleTabs.length != _tabController!.length) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _tabController?.dispose();
-                  _pageController?.dispose();
-                  _tabController = TabController(
-                    length: provider.visibleTabs.length,
-                    vsync: this,
-                  );
-                  _pageController = PageController();
-                  setState(() {});
-                });
-              }
-              return DiscoverTabBar(
-                tabs: provider.visibleTabs,
-                controller: _tabController!,
-                onTabTap: (index) {
-                  _pageController?.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
+              return Scaffold(
+                backgroundColor: Colors.white,
+                appBar: DiscoverAppBar(
+                  scrollOffset: provider.scrollOffset,
+                  themeStyle: provider.themeStyle,
+                  onSearchTap: () {
+                    // 跳转搜索页面
+                    // TODO: 实现搜索页面跳转
+                  },
+                  onMessageTap: () async {
+                    // 跳转消息中心（需要登录）
+                    final canAccess = await RouteGuard.checkLoginForAction('message');
+                    if (canAccess) {
+                      // TODO: 跳转消息中心页面
+                    }
+                  },
+                  child: provider.visibleTabs.isEmpty
+                      ? const SizedBox.shrink()
+                      : DiscoverTabBar(
+                          tabs: provider.visibleTabs,
+                          controller: _tabController!,
+                          themeStyle: provider.themeStyle,
+                          onTabTap: (index) {
+                            _pageController?.animateToPage(
+                              index,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                        ),
+                ),
+                body: provider.visibleTabs.isEmpty || _pageController == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : NotificationListener<ScrollNotification>(
+                        onNotification: (notification) {
+                          // 监听滚动，更新滚动偏移量
+                          if (notification is ScrollUpdateNotification) {
+                            provider.updateScrollOffset(notification.metrics.pixels);
+                          }
+                          return false;
+                        },
+                        child: PageView.builder(
+                          controller: _pageController!,
+                          onPageChanged: _onPageChanged,
+                          itemCount: provider.visibleTabs.length,
+                          itemBuilder: (context, index) {
+                            final tab = provider.visibleTabs[index];
+                            return _buildPageByTab(tab);
+                          },
+                        ),
+                      ),
               );
             },
-          ),
-        ),
-        body: Consumer<DiscoverProvider>(
-          builder: (context, provider, child) {
-            if (provider.visibleTabs.isEmpty || _pageController == null) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return PageView.builder(
-              controller: _pageController!,
-              onPageChanged: _onPageChanged,
-              itemCount: provider.visibleTabs.length,
-              itemBuilder: (context, index) {
-                final tab = provider.visibleTabs[index];
-                return _buildPageByTab(tab);
-              },
-            );
-          },
-        ),
+          );
+        },
       ),
     );
   }

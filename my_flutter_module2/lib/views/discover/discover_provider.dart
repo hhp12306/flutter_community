@@ -9,10 +9,14 @@ class DiscoverProvider extends ChangeNotifier {
   List<TabModel> _allTabs = [];
   List<TabModel> _visibleTabs = [];
   int _currentIndex = 0;
+  double _scrollOffset = 0.0; // 滚动偏移量
+  int? _themeStyle; // 主题样式：1为黑色，2为白色
 
   List<TabModel> get allTabs => _allTabs;
   List<TabModel> get visibleTabs => _visibleTabs;
   int get currentIndex => _currentIndex;
+  double get scrollOffset => _scrollOffset;
+  int? get themeStyle => _themeStyle;
 
   /// 加载Tab配置
   Future<void> loadTabs() async {
@@ -88,6 +92,22 @@ class DiscoverProvider extends ChangeNotifier {
     final index = getTabIndexById(tabId);
     if (index != null) {
       setCurrentIndex(index);
+    }
+  }
+
+  /// 更新滚动偏移量
+  void updateScrollOffset(double offset) {
+    if (_scrollOffset != offset) {
+      _scrollOffset = offset;
+      notifyListeners();
+    }
+  }
+
+  /// 更新主题样式
+  void updateThemeStyle(int? style) {
+    if (_themeStyle != style) {
+      _themeStyle = style;
+      notifyListeners();
     }
   }
 }

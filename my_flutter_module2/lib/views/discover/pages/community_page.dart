@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../../post/post_page.dart';
+import 'package:go_router/go_router.dart';
+import '../../common/user_info.dart';
+import '../../../config/app_routes.dart';
+import '../../../utils/route_guard.dart';
 
 /// 社区页面
 /// 包括精选、最新、关注tab，默认进入精选tab
@@ -113,12 +116,17 @@ class _CommunityPageState extends State<CommunityPage>
       ),
       // 右下角悬浮发帖按钮
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // 跳转到发帖页面
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PostPage()),
-          );
+        onPressed: () async {
+          // 跳转到发帖页面（需要登录）
+          // 先检查登录状态
+          final redirect = await RouteGuard.guardAsync(AppRoutes.post);
+          if (redirect == null) {
+            // 已登录或不需要登录，跳转到发帖页
+            context.push(AppRoutes.post);
+          } else {
+            // 未登录且取消登录，不跳转
+            // 可以显示提示信息
+          }
         },
         backgroundColor: Colors.blue,
         child: const Icon(Icons.add, color: Colors.white),
@@ -260,9 +268,12 @@ class _CommunityPageState extends State<CommunityPage>
         'id': 'featured_$index',
         'title': '精选帖子 $index',
         'author': '发布人$index',
+        'authorId': 'user_$index', // 作者ID
+        'carTag': '车型Tag',
         'time': '${index}小时前',
         'likeCount': 100 + index,
         'commentCount': 50 + index,
+        'isFollowed': false, // 是否已关注
       });
     } else {
       // 加载更多
@@ -273,9 +284,12 @@ class _CommunityPageState extends State<CommunityPage>
             'id': 'featured_$postIndex',
             'title': '精选帖子 $postIndex',
             'author': '发布人$postIndex',
+            'authorId': 'user_$postIndex', // 作者ID
+            'carTag': '车型Tag',
             'time': '${postIndex}小时前',
             'likeCount': 100 + postIndex,
             'commentCount': 50 + postIndex,
+            'isFollowed': false, // 是否已关注
           };
         });
         _featuredPosts.addAll(newPosts);
@@ -300,9 +314,12 @@ class _CommunityPageState extends State<CommunityPage>
         'id': 'latest_$index',
         'title': '最新帖子 $index',
         'author': '发布人$index',
+        'authorId': 'user_$index', // 作者ID
+        'carTag': '车型Tag',
         'time': '${index}分钟前',
         'likeCount': 80 + index,
         'commentCount': 40 + index,
+        'isFollowed': false, // 是否已关注
       });
     } else {
       // 加载更多
@@ -313,9 +330,12 @@ class _CommunityPageState extends State<CommunityPage>
             'id': 'latest_$postIndex',
             'title': '最新帖子 $postIndex',
             'author': '发布人$postIndex',
+            'authorId': 'user_$postIndex', // 作者ID
+            'carTag': '车型Tag',
             'time': '${postIndex}分钟前',
             'likeCount': 80 + postIndex,
             'commentCount': 40 + postIndex,
+            'isFollowed': false, // 是否已关注
           };
         });
         _latestPosts.addAll(newPosts);
@@ -340,9 +360,12 @@ class _CommunityPageState extends State<CommunityPage>
         'id': 'following_$index',
         'title': '关注帖子 $index',
         'author': '关注的人$index',
+        'authorId': 'user_$index', // 作者ID
+        'carTag': '车型Tag',
         'time': '${index}小时前',
         'likeCount': 120 + index,
         'commentCount': 60 + index,
+        'isFollowed': true, // 已关注（关注tab中的帖子都是已关注的）
       });
     } else {
       // 加载更多
@@ -353,9 +376,12 @@ class _CommunityPageState extends State<CommunityPage>
             'id': 'following_$postIndex',
             'title': '关注帖子 $postIndex',
             'author': '关注的人$postIndex',
+            'authorId': 'user_$postIndex', // 作者ID
+            'carTag': '车型Tag',
             'time': '${postIndex}小时前',
             'likeCount': 120 + postIndex,
             'commentCount': 60 + postIndex,
+            'isFollowed': true, // 已关注（关注tab中的帖子都是已关注的）
           };
         });
         _followingPosts.addAll(newPosts);
@@ -382,33 +408,34 @@ class _CommunityPageState extends State<CommunityPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 发布人信息
+          // 发布人信息（使用通用组件，带关注按钮）
           Row(
             children: [
-              const CircleAvatar(
-                radius: 20.0,
-                backgroundColor: Colors.grey,
-              ),
-              const SizedBox(width: 12.0),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      post['author'] ?? '发布人名称',
-                      style: const TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    Text(
-                      '车型Tag · ${post['time'] ?? '2小时前'}',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                child: UserInfo(
+                  avatarUrl: post['avatarUrl'],
+                  userName: post['author'] ?? '发布人名称',
+                  tag: post['carTag'] ?? '车型Tag',
+                  authorId: post['authorId'],
+                  avatarSize: 20.0,
+                  fontSize: 14.0,
+                  showFollowButton: true, // 显示关注按钮
+                  isFollowed: post['isFollowed'] ?? false,
+                  onFollowChanged: (isFollowed) {
+                    // 更新本地状态
+                    setState(() {
+                      post['isFollowed'] = isFollowed;
+                    });
+                    // TODO: 调用后端API更新关注状态
+                  },
+                ),
+              ),
+              // 发布时间
+              Text(
+                post['time'] ?? '2小时前',
+                style: TextStyle(
+                  fontSize: 12.0,
+                  color: Colors.grey[600],
                 ),
               ),
             ],

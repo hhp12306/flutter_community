@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../models/article_model.dart';
 import '../../../utils/time_util.dart';
-import '../../../utils/count_util.dart';
+import '../../common/common_components.dart';
 
 /// 文章列表组件（瀑布流效果）
 class ArticleList extends StatelessWidget {
@@ -66,48 +65,17 @@ class ArticleList extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 图片（视频封面）
+            // 图片（视频封面）- 使用通用组件
             if (article.imageUrl != null || article.videoUrl != null)
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8.0)),
-                child: Stack(
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: article.videoUrl ?? article.imageUrl ?? '',
-                      width: double.infinity,
-                      height: imageHeight,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        height: imageHeight,
-                        color: Colors.grey[300],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        height: imageHeight,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      ),
-                    ),
-                    // 视频标识
-                    if (article.videoUrl != null)
-                      Positioned.fill(
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(8.0),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.play_arrow,
-                              color: Colors.white,
-                              size: 32,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+              ImageDisplay(
+                imageUrl: article.imageUrl,
+                videoUrl: article.videoUrl,
+                width: double.infinity,
+                height: imageHeight,
+                fit: BoxFit.cover,
+                borderRadius: 8.0,
+                showVideoIcon: true,
+                enablePreview: true,
               ),
             
             // 内容区
@@ -176,114 +144,49 @@ class ArticleList extends StatelessWidget {
                   
                   const SizedBox(height: 8.0),
                   
-                  // 发布人信息
-                  Row(
-                    children: [
-                      // 头像
-                      if (article.authorAvatar != null)
-                        ClipOval(
-                          child: CachedNetworkImage(
-                            imageUrl: article.authorAvatar!,
-                            width: 24.0,
-                            height: 24.0,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              width: 24.0,
-                              height: 24.0,
-                              color: Colors.grey[300],
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              width: 24.0,
-                              height: 24.0,
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.person, size: 16),
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          width: 24.0,
-                          height: 24.0,
-                          decoration: const BoxDecoration(
-                            color: Colors.grey,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.person, size: 16, color: Colors.white),
-                        ),
-                      
-                      const SizedBox(width: 6.0),
-                      
-                      // 发布人名称
-                      Expanded(
-                        child: Text(
-                          article.authorName,
-                          style: const TextStyle(
-                            fontSize: 12.0,
-                            color: Colors.black54,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      
-                      // 车型Tag
-                      if (article.carTag != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6.0,
-                            vertical: 2.0,
-                          ),
-                          margin: const EdgeInsets.only(left: 4.0),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: Text(
-                            article.carTag!,
-                            style: const TextStyle(
-                              fontSize: 10.0,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                    ],
+                  // 发布人信息 - 使用通用组件（带关注按钮）
+                  UserInfo(
+                    avatarUrl: article.authorAvatar,
+                    userName: article.authorName,
+                    tag: article.carTag,
+                    authorId: article.authorId,
+                    avatarSize: 24.0,
+                    fontSize: 12.0,
+                    showFollowButton: true, // 显示关注按钮
+                    isFollowed: article.isFollowed,
+                    onFollowChanged: (isFollowed) {
+                      // TODO: 更新文章关注状态
+                      // 这里可以更新本地状态或调用API
+                    },
                   ),
                   
                   const SizedBox(height: 8.0),
                   
-                  // 点赞/收藏数
+                  // 点赞/收藏数 - 使用通用组件
                   Row(
                     children: [
-                      // 点赞
-                      Icon(
-                        article.isLiked ? Icons.favorite : Icons.favorite_border,
-                        size: 16.0,
-                        color: article.isLiked ? Colors.red : Colors.grey,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        CountUtil.formatLikeCount(article.likeCount),
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.black54,
-                        ),
+                      // 点赞按钮
+                      LikeButton(
+                        isLiked: article.isLiked,
+                        likeCount: article.likeCount,
+                        iconSize: 16.0,
+                        fontSize: 12.0,
+                        onLikeChanged: (isLiked) {
+                          // TODO: 更新文章点赞状态
+                        },
                       ),
                       
                       const SizedBox(width: 16.0),
                       
-                      // 收藏
-                      Icon(
-                        article.isCollected ? Icons.bookmark : Icons.bookmark_border,
-                        size: 16.0,
-                        color: article.isCollected ? Colors.orange : Colors.grey,
-                      ),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        CountUtil.formatCount(article.collectCount),
-                        style: const TextStyle(
-                          fontSize: 12.0,
-                          color: Colors.black54,
-                        ),
+                      // 收藏按钮
+                      CollectButton(
+                        isCollected: article.isCollected,
+                        collectCount: article.collectCount,
+                        iconSize: 16.0,
+                        fontSize: 12.0,
+                        onCollectChanged: (isCollected) {
+                          // TODO: 更新文章收藏状态
+                        },
                       ),
                       
                       const Spacer(),

@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "Discover",
+    "title": "Discover"
+  },
+  "discover": {
+    "recommend": "Recommend",
+    "community": "Community",
+    "club": "Club",
+    "smartDrive": "Smart Drive",
+    "activity": "Activity",
+    "news": "News",
+    "circle": "Circle",
+    "live": "Live",
+    "reputation": "Reputation"
+  },
+  "common": {
+    "search": "Search",
+    "message": "Message",
+    "like": "Like",
+    "collect": "Collect",
+    "comment": "Comment",
+    "share": "Share",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "loadMore": "Load More",
+    "noMore": "No More",
+    "pullToRefresh": "Pull to Refresh",
+    "releaseToRefresh": "Release to Refresh",
+    "refreshing": "Refreshing...",
+    "refreshComplete": "Refresh Complete",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "publish": "Publish",
+    "draft": "Draft",
+    "top": "Top",
+    "featured": "Featured",
+    "latest": "Latest",
+    "following": "Following"
+  },
+  "article": {
+    "title": "Articles",
+    "author": "Author",
+    "publishTime": "Publish Time",
+    "likeCount": "Likes",
+    "collectCount": "Collections",
+    "commentCount": "Comments"
+  },
+  "community": {
+    "post": "Post",
+    "featured": "Featured",
+    "latest": "Latest",
+    "following": "Following"
+  },
+  "post": {
+    "title": "Post",
+    "text": "Text",
+    "image": "Image",
+    "video": "Video",
+    "publish": "Publish",
+    "saveDraft": "Save Draft"
+  },
+  "video": {
+    "play": "Play",
+    "pause": "Pause",
+    "fullscreen": "Fullscreen"
+  }
+}

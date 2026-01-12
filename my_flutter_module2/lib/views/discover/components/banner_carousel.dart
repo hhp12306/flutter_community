@@ -4,17 +4,38 @@ import 'package:carousel_slider/carousel_slider.dart';
 import '../../../models/banner_model.dart';
 
 /// Banner轮播图组件
-class BannerCarousel extends StatelessWidget {
+class BannerCarousel extends StatefulWidget {
   final List<BannerModel> banners;
+  final ValueChanged<int?>? onThemeStyleChanged; // themeStyle变化回调
 
   const BannerCarousel({
     Key? key,
     required this.banners,
+    this.onThemeStyleChanged,
   }) : super(key: key);
 
   @override
+  State<BannerCarousel> createState() => _BannerCarouselState();
+}
+
+class _BannerCarouselState extends State<BannerCarousel> {
+  @override
+  void initState() {
+    super.initState();
+    // 初始化时通知当前themeStyle
+    if (widget.banners.isNotEmpty) {
+      _notifyThemeStyle(widget.banners[0].themeStyle);
+    }
+  }
+
+  /// 通知themeStyle变化
+  void _notifyThemeStyle(int? themeStyle) {
+    widget.onThemeStyleChanged?.call(themeStyle);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (banners.isEmpty) {
+    if (widget.banners.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -28,8 +49,14 @@ class BannerCarousel extends StatelessWidget {
         enlargeCenterPage: false, // 不放大中心页
         viewportFraction: 1.0, // 全宽显示
         padEnds: false, // 移除两端padding
+        onPageChanged: (index, reason) {
+          // 轮播图切换时，通知themeStyle变化
+          if (index < widget.banners.length) {
+            _notifyThemeStyle(widget.banners[index].themeStyle);
+          }
+        },
       ),
-      items: banners.map((banner) {
+      items: widget.banners.map((banner) {
         return Builder(
           builder: (BuildContext context) {
             return GestureDetector(

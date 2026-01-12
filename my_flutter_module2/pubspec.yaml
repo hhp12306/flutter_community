@@ -65,6 +65,9 @@ dependencies:
   
   # 文件处理
   path_provider: ^2.1.2
+  
+  # 地理位置定位
+  geolocator: ^12.0.0
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +91,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/locales/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
