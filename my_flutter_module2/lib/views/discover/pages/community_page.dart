@@ -16,7 +16,7 @@ class CommunityPage extends StatefulWidget {
 }
 
 class _CommunityPageState extends State<CommunityPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
   
   // 为每个Tab创建独立的刷新控制器
@@ -36,12 +36,20 @@ class _CommunityPageState extends State<CommunityPage>
   bool _featuredHasMore = true;
   bool _latestHasMore = true;
   bool _followingHasMore = true;
+  bool _isInitialized = false; // 是否已初始化
+
+  @override
+  bool get wantKeepAlive => true; // 保持页面状态
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-    _loadInitialData();
+    // 只在首次创建时加载数据
+    if (!_isInitialized) {
+      _loadInitialData();
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -62,6 +70,7 @@ class _CommunityPageState extends State<CommunityPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必须调用，用于保持页面状态
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(

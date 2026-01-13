@@ -97,12 +97,12 @@ class LocationService {
   Future<List<CityModel>> getHotCities() async {
     // TODO: 从后端获取热门城市列表
     return [
-      CityModel(id: 'beijing', name: '北京', isHot: true),
-      CityModel(id: 'shanghai', name: '上海', isHot: true),
-      CityModel(id: 'guangzhou', name: '广州', isHot: true),
-      CityModel(id: 'shenzhen', name: '深圳', isHot: true),
-      CityModel(id: 'hangzhou', name: '杭州', isHot: true),
-      CityModel(id: 'chengdu', name: '成都', isHot: true),
+      CityModel(id: 'beijing', name: '北京', isHot: true, initialLetter: 'B'),
+      CityModel(id: 'shanghai', name: '上海', isHot: true, initialLetter: 'S'),
+      CityModel(id: 'guangzhou', name: '广州', isHot: true, initialLetter: 'G'),
+      CityModel(id: 'shenzhen', name: '深圳', isHot: true, initialLetter: 'S'),
+      CityModel(id: 'hangzhou', name: '杭州', isHot: true, initialLetter: 'H'),
+      CityModel(id: 'chengdu', name: '成都', isHot: true, initialLetter: 'C'),
     ];
   }
 
@@ -114,14 +114,28 @@ class LocationService {
     
     final allCities = [
       ...hotCities,
-      CityModel(id: 'nanjing', name: '南京'),
-      CityModel(id: 'wuhan', name: '武汉'),
-      CityModel(id: 'xian', name: '西安'),
-      CityModel(id: 'tianjin', name: '天津'),
-      CityModel(id: 'chongqing', name: '重庆'),
-      CityModel(id: 'suzhou', name: '苏州'),
-      CityModel(id: 'dalian', name: '大连'),
-      CityModel(id: 'qingdao', name: '青岛'),
+      CityModel(id: 'nanjing', name: '南京', initialLetter: 'N'),
+      CityModel(id: 'wuhan', name: '武汉', initialLetter: 'W'),
+      CityModel(id: 'xian', name: '西安', initialLetter: 'X'),
+      CityModel(id: 'tianjin', name: '天津', initialLetter: 'T'),
+      CityModel(id: 'chongqing', name: '重庆', initialLetter: 'C'),
+      CityModel(id: 'suzhou', name: '苏州', initialLetter: 'S'),
+      CityModel(id: 'dalian', name: '大连', initialLetter: 'D'),
+      CityModel(id: 'qingdao', name: '青岛', initialLetter: 'Q'),
+      CityModel(id: 'changsha', name: '长沙', initialLetter: 'C'),
+      CityModel(id: 'shenyang', name: '沈阳', initialLetter: 'S'),
+      CityModel(id: 'zhengzhou', name: '郑州', initialLetter: 'Z'),
+      CityModel(id: 'jinan', name: '济南', initialLetter: 'J'),
+      CityModel(id: 'harbin', name: '哈尔滨', initialLetter: 'H'),
+      CityModel(id: 'fuzhou', name: '福州', initialLetter: 'F'),
+      CityModel(id: 'xiamen', name: '厦门', initialLetter: 'X'),
+      CityModel(id: 'hefei', name: '合肥', initialLetter: 'H'),
+      CityModel(id: 'shijiazhuang', name: '石家庄', initialLetter: 'S'),
+      CityModel(id: 'taiyuan', name: '太原', initialLetter: 'T'),
+      CityModel(id: 'kunming', name: '昆明', initialLetter: 'K'),
+      CityModel(id: 'nanchang', name: '南昌', initialLetter: 'N'),
+      CityModel(id: 'changchun', name: '长春', initialLetter: 'C'),
+      CityModel(id: 'shijiazhuang2', name: '石家庄', initialLetter: 'S'),
     ];
     
     return allCities;

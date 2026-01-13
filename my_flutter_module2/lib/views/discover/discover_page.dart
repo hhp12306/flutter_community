@@ -184,6 +184,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                           controller: _pageController!,
                           onPageChanged: _onPageChanged,
                           itemCount: provider.visibleTabs.length,
+                          // PageView.builder 默认会保持页面状态，配合 AutomaticKeepAliveClientMixin 使用
                           itemBuilder: (context, index) {
                             final tab = provider.visibleTabs[index];
                             return _buildPageByTab(tab);

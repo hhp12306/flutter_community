@@ -20,7 +20,8 @@ class RecommendPage extends StatefulWidget {
   State<RecommendPage> createState() => _RecommendPageState();
 }
 
-class _RecommendPageState extends State<RecommendPage> {
+class _RecommendPageState extends State<RecommendPage>
+    with AutomaticKeepAliveClientMixin {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   
   // 模拟数据（实际应该从后端获取）
@@ -31,11 +32,19 @@ class _RecommendPageState extends State<RecommendPage> {
   bool _isLoading = false;
   int _currentPage = 1; // 当前页码
   bool _hasMore = true; // 是否还有更多数据
+  bool _isInitialized = false; // 是否已初始化
+
+  @override
+  bool get wantKeepAlive => true; // 保持页面状态
 
   @override
   void initState() {
     super.initState();
-    _loadData(isRefresh: true);
+    // 只在首次创建时加载数据
+    if (!_isInitialized) {
+      _loadData(isRefresh: true);
+      _isInitialized = true;
+    }
   }
 
   @override
@@ -173,6 +182,7 @@ class _RecommendPageState extends State<RecommendPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必须调用，用于保持页面状态
     if (_isLoading && _articles.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }

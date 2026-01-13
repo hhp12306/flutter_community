@@ -12,15 +12,24 @@ class ClubPage extends StatefulWidget {
   State<ClubPage> createState() => _ClubPageState();
 }
 
-class _ClubPageState extends State<ClubPage> {
+class _ClubPageState extends State<ClubPage>
+    with AutomaticKeepAliveClientMixin {
   final LocationService _locationService = LocationService();
   CityModel? _currentCity;
   bool _isLoading = true;
+  bool _isInitialized = false; // 是否已初始化
+
+  @override
+  bool get wantKeepAlive => true; // 保持页面状态
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentCity();
+    // 只在首次创建时加载数据
+    if (!_isInitialized) {
+      _loadCurrentCity();
+      _isInitialized = true;
+    }
   }
 
   /// 加载当前城市
@@ -89,7 +98,9 @@ class _ClubPageState extends State<ClubPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
+    super.build(context); // 必须调用，用于保持页面状态
+    // 只在首次加载且未完成时显示加载状态
+    if (_isLoading && _currentCity == null) {
       return const Center(child: CircularProgressIndicator());
     }
 

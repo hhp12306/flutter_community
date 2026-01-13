@@ -13,14 +13,23 @@ class SmartDrivePage extends StatefulWidget {
   State<SmartDrivePage> createState() => _SmartDrivePageState();
 }
 
-class _SmartDrivePageState extends State<SmartDrivePage> {
+class _SmartDrivePageState extends State<SmartDrivePage>
+    with AutomaticKeepAliveClientMixin {
   List<BannerModel> _banners = [];
   List<Map<String, dynamic>> _functions = [];
+  bool _isInitialized = false; // 是否已初始化
+
+  @override
+  bool get wantKeepAlive => true; // 保持页面状态
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    // 只在首次创建时加载数据
+    if (!_isInitialized) {
+      _loadData();
+      _isInitialized = true;
+    }
   }
 
   Future<void> _loadData() async {
@@ -43,6 +52,7 @@ class _SmartDrivePageState extends State<SmartDrivePage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // 必须调用，用于保持页面状态
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView(
