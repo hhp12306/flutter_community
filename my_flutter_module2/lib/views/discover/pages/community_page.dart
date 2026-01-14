@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../../common/user_info.dart';
 import '../../../config/app_routes.dart';
 import '../../../utils/route_guard.dart';
@@ -131,7 +131,7 @@ class _CommunityPageState extends State<CommunityPage>
           final redirect = await RouteGuard.guardAsync(AppRoutes.post);
           if (redirect == null) {
             // 已登录或不需要登录，跳转到发帖页
-            context.push(AppRoutes.post);
+            Get.toNamed(AppRoutes.post);
           } else {
             // 未登录且取消登录，不跳转
             // 可以显示提示信息

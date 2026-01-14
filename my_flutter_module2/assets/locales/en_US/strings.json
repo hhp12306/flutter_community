@@ -41,7 +41,17 @@
     "top": "Top",
     "featured": "Featured",
     "latest": "Latest",
-    "following": "Following"
+    "following": "Following",
+    "follow": "Follow",
+    "followed": "Followed",
+    "selectCity": "Select City",
+    "switchCity": "Switch City",
+    "currentCity": "Current City",
+    "currentLocation": "Current Location",
+    "nationwide": "Nationwide",
+    "noData": "No Data",
+    "operationFailed": "Operation Failed",
+    "more": "More"
   },
   "article": {
     "title": "Articles",
@@ -55,19 +65,73 @@
     "post": "Post",
     "featured": "Featured",
     "latest": "Latest",
-    "following": "Following"
+    "following": "Following",
+    "featuredPost": "Featured Post",
+    "latestPost": "Latest Post",
+    "followingPost": "Following Post",
+    "publisher": "Publisher",
+    "followingUser": "Following User"
+  },
+  "activity": {
+    "title": "Activity",
+    "activityCity": "Activity City",
+    "registrationTime": "Registration Time",
+    "activityLocation": "Activity Location",
+    "distance": "Distance",
+    "noActivity": "No Activity",
+    "testActivity": "Test Activity",
+    "registering": "Registering",
+    "registered": "Registered",
+    "ended": "Ended",
+    "full": "Full"
+  },
+  "city": {
+    "title": "Select City",
+    "searchPlaceholder": "Please enter city name to search",
+    "currentLocation": "Current Location",
+    "nationwide": "Nationwide",
+    "notFound": "City not found",
+    "hotCities": "Hot Cities"
   },
   "post": {
     "title": "Post",
     "text": "Text",
     "image": "Image",
     "video": "Video",
+    "topic": "Topic",
+    "location": "Location",
     "publish": "Publish",
-    "saveDraft": "Save Draft"
+    "saveDraft": "Save Draft",
+    "draftSaved": "Draft saved",
+    "publishSuccess": "Published successfully",
+    "publishFailed": "Publish failed",
+    "pleaseInputContent": "Please enter content or select image/video",
+    "shareYourThoughts": "Share your thoughts...",
+    "selectFromAlbum": "Select from Album",
+    "takePhoto": "Take Photo"
   },
   "video": {
     "play": "Play",
     "pause": "Pause",
-    "fullscreen": "Fullscreen"
+    "fullscreen": "Fullscreen",
+    "loadFailed": "Video load failed"
+  },
+  "club": {
+    "title": "Club",
+    "content": "Club page content"
+  },
+  "page": {
+    "circle": "Circle Page",
+    "reputation": "Reputation Page",
+    "live": "Live Page",
+    "news": "News Page"
+  },
+  "component": {
+    "hotTopics": "Hot Topics",
+    "featuredCollection": "Featured Collection",
+    "latestCarNews": "Latest Car News",
+    "hotCollection": "Hot Collection",
+    "function": "Function",
+    "author": "Author"
   }
 }

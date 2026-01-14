@@ -16,8 +16,8 @@ class _ReputationPageState extends State<ReputationPage>
   @override
   Widget build(BuildContext context) {
     super.build(context); // 必须调用，用于保持页面状态
-    return const Center(
-      child: Text('口碑页面', style: TextStyle(fontSize: 18.0)),
+    return Center(
+      child: const Text('口碑页面', style: TextStyle(fontSize: 18.0)),
     );
   }
 }

@@ -99,7 +99,7 @@ class ArticleList extends StatelessWidget {
                             color: Colors.red,
                             borderRadius: BorderRadius.circular(2.0),
                           ),
-                          child: const Text(
+                          child: Text(
                             '置顶',
                             style: TextStyle(
                               color: Colors.white,
@@ -118,7 +118,7 @@ class ArticleList extends StatelessWidget {
                             color: Colors.orange,
                             borderRadius: BorderRadius.circular(2.0),
                           ),
-                          child: const Text(
+                          child: Text(
                             '精选',
                             style: TextStyle(
                               color: Colors.white,

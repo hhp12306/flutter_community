@@ -51,5 +51,11 @@ class TimeUtil {
     final time = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     return formatTime(time);
   }
+
+  /// 格式化日期时间（自定义格式）
+  /// format: 格式字符串，如 'yyyy/MM/dd HH:mm'
+  static String formatDateTime(DateTime time, {String format = 'yyyy-MM-dd HH:mm'}) {
+    return DateFormat(format).format(time);
+  }
 }
 

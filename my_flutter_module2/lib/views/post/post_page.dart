@@ -88,7 +88,7 @@ class _PostPageState extends State<PostPage> {
   /// 保存草稿
   Future<void> _saveDraft() async {
     // TODO: 保存草稿到本地存储
-    ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('草稿已保存')),
     );
   }
@@ -166,7 +166,7 @@ class _PostPageState extends State<PostPage> {
             TextField(
               controller: _textController,
               maxLines: 10,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '分享你的想法...',
                 border: InputBorder.none,
               ),

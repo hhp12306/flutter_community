@@ -16,8 +16,8 @@ class _LivePageState extends State<LivePage>
   @override
   Widget build(BuildContext context) {
     super.build(context); // 必须调用，用于保持页面状态
-    return const Center(
-      child: Text('直播页面', style: TextStyle(fontSize: 18.0)),
+    return Center(
+      child: const Text('直播页面', style: TextStyle(fontSize: 18.0)),
     );
   }
 }

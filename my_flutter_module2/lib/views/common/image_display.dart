@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../../config/app_routes.dart';
 
 /// 图片展示组件
@@ -116,8 +116,9 @@ class ImageDisplay extends StatelessWidget {
                   if (onTap != null) {
                     onTap!();
                   } else {
-                    context.push(
-                      '${AppRoutes.videoPlayer}?url=${Uri.encodeComponent(videoUrl!)}',
+                    Get.toNamed(
+                      AppRoutes.videoPlayer,
+                      parameters: {'url': videoUrl!},
                     );
                   }
                 },

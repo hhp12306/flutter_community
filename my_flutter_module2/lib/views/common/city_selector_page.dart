@@ -21,11 +21,11 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   
-  List<CityModel> _hotCities = [];
   Map<String, List<CityModel>> _groupedCities = {}; // 按字母分组的城市
   List<String> _letters = []; // 字母列表（A-Z）
   List<CityModel> _searchResults = [];
   CityModel? _currentCity;
+  CityModel? _locationCity; // 当前定位的城市
   bool _isSearching = false;
   bool _isLoading = true;
   String? _selectedLetter; // 当前选中的字母（用于高亮）
@@ -35,6 +35,21 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
     super.initState();
     _currentCity = widget.currentCity;
     _loadCities();
+    _loadLocationCity();
+  }
+
+  /// 加载当前定位城市
+  Future<void> _loadLocationCity() async {
+    try {
+      final locationCity = await _locationService.getLocationCity();
+      if (locationCity != null) {
+        setState(() {
+          _locationCity = locationCity;
+        });
+      }
+    } catch (e) {
+      // 忽略错误
+    }
   }
 
   @override
@@ -51,18 +66,14 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
     });
 
     try {
-      final hotCities = await _locationService.getHotCities();
       final allCities = await _locationService.getAllCities();
       
       // 按字母分组
       final grouped = <String, List<CityModel>>{};
       final letters = <String>[];
       
-      // 过滤掉热门城市，避免重复
-      final nonHotCities = allCities.where((city) => !city.isHot).toList();
-      
       // 按首字母分组
-      for (final city in nonHotCities) {
+      for (final city in allCities) {
         final letter = city.initialLetter ?? city.getInitialLetter();
         if (!grouped.containsKey(letter)) {
           grouped[letter] = [];
@@ -80,7 +91,6 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
       }
       
       setState(() {
-        _hotCities = hotCities;
         _groupedCities = grouped;
         _letters = letters;
         _isLoading = false;
@@ -128,65 +138,20 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
     Navigator.of(context).pop(city);
   }
 
-  /// 使用定位
-  Future<void> _useLocation() async {
-    // 显示加载提示
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-
-    try {
-      final location = await _locationService.getCurrentLocation();
-      
-      if (!mounted) return;
-      Navigator.of(context).pop(); // 关闭加载提示
-
-      if (location != null) {
-        final city = await _locationService.getCityByLocation(location);
-        
-        if (city != null && mounted) {
-          _selectCity(city);
-        } else if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('定位失败，请手动选择城市')),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('定位失败，请检查定位权限')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context).pop(); // 关闭加载提示
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('定位失败: $e')),
-        );
-      }
-    }
-  }
 
   /// 滚动到指定字母组
   void _scrollToLetter(String letter) {
     // 找到该字母组的索引位置
     double offset = 0.0;
     
-    // 热门城市的高度（如果有）
-    if (_hotCities.isNotEmpty) {
-      offset += 100.0; // 热门城市区域大约高度
-    }
+    // "全国"选项的高度
+    offset += 48.0; // 大约高度
     
     // 计算前面字母组的高度
     for (final l in _letters) {
       if (l == letter) break;
       final cities = _groupedCities[l] ?? [];
-      offset += 50.0 + (cities.length * 56.0); // 标题高度 + 城市项高度
+      offset += 36.0 + (cities.length * 48.0); // 标题高度 + 城市项高度
     }
     
     // 滚动到指定位置
@@ -213,9 +178,18 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('选择城市'),
+        title: const Text(
+          '选择城市',
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -223,16 +197,28 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
               children: [
                 // 搜索框（顶部模糊搜索）
                 Container(
-                  padding: const EdgeInsets.all(12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   color: Colors.white,
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: '搜索城市名称',
-                      prefixIcon: const Icon(Icons.search),
+                      hintText: '请输入城市名称搜索',
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 14.0,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Colors.grey[600],
+                        size: 20.0,
+                      ),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.clear),
+                              icon: Icon(
+                                Icons.clear,
+                                color: Colors.grey[600],
+                                size: 20.0,
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                                 _onSearchChanged('');
@@ -241,53 +227,45 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
                           : null,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
+                        borderSide: BorderSide.none,
                       ),
                       filled: true,
                       fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 12.0,
+                      ),
                     ),
                     onChanged: _onSearchChanged,
+                    style: const TextStyle(fontSize: 14.0),
                   ),
                 ),
                 
-                // 定位按钮
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                  color: Colors.white,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.location_on, color: Colors.blue),
-                        onPressed: _useLocation,
-                      ),
-                      const Text(
-                        '使用定位',
-                        style: TextStyle(fontSize: 14.0),
-                      ),
-                      const Spacer(),
-                      if (_currentCity != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 4.0,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: Text(
-                            '当前: ${_currentCity!.name}',
-                            style: const TextStyle(
-                              fontSize: 12.0,
-                              color: Colors.blue,
-                            ),
+                // 当前定位显示
+                if (_locationCity != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: Colors.grey[600],
+                          size: 18.0,
+                        ),
+                        const SizedBox(width: 8.0),
+                        Text(
+                          '当前定位: ${_locationCity!.name}',
+                          style: TextStyle(
+                            fontSize: 14.0,
+                            color: Colors.grey[800],
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 
-                const Divider(height: 1),
+                const Divider(height: 1, thickness: 0.5),
                 
                 // 城市列表（带字母索引）
                 Expanded(
@@ -328,10 +306,8 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
   int _getTotalItemCount() {
     int count = 0;
     
-    // 热门城市区域
-    if (_hotCities.isNotEmpty) {
-      count += 2; // 标题 + 热门城市容器
-    }
+    // "全国"选项
+    count += 1;
     
     // 每个字母组：标题 + 城市列表
     for (final letter in _letters) {
@@ -346,63 +322,11 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
   Widget _buildListItem(int index) {
     int currentIndex = 0;
     
-    // 热门城市区域
-    if (_hotCities.isNotEmpty) {
-      if (index == currentIndex) {
-        // 热门城市标题
-        return Container(
-          padding: const EdgeInsets.all(12.0),
-          color: Colors.grey[50],
-          child: const Text(
-            '热门城市',
-            style: TextStyle(
-              fontSize: 14.0,
-              fontWeight: FontWeight.w500,
-              color: Colors.black54,
-            ),
-          ),
-        );
-      }
-      currentIndex++;
-      
-      if (index == currentIndex) {
-        // 热门城市列表
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-          child: Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: _hotCities.map((city) {
-              final isSelected = _currentCity?.id == city.id;
-              return GestureDetector(
-                onTap: () => _selectCity(city),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.blue : Colors.white,
-                    border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey[300]!,
-                    ),
-                    borderRadius: BorderRadius.circular(20.0),
-                  ),
-                  child: Text(
-                    city.name,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
-                      fontSize: 14.0,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        );
-      }
-      currentIndex++;
+    // "全国"选项（第一项）
+    if (index == currentIndex) {
+      return _buildNationwideItem();
     }
+    currentIndex++;
     
     // 字母分组城市
     for (final letter in _letters) {
@@ -426,12 +350,53 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
     return const SizedBox.shrink();
   }
 
+  /// 构建"全国"选项
+  Widget _buildNationwideItem() {
+    final isSelected = _currentCity?.id == 'nationwide';
+    return InkWell(
+      onTap: () {
+        // 选择"全国"
+        final nationwideCity = CityModel(
+          id: 'nationwide',
+          name: '全国',
+        );
+        _selectCity(nationwideCity);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
+        ),
+        child: Row(
+          children: [
+            Text(
+              '全国',
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[900],
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(
+                Icons.check,
+                color: Colors.blue,
+                size: 20.0,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 构建字母标题
   Widget _buildLetterHeader(String letter) {
     final isSelected = _selectedLetter == letter;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.grey[50],
+      alignment: Alignment.centerLeft,
       child: Text(
         letter,
         style: TextStyle(
@@ -446,65 +411,60 @@ class _CitySelectorPageState extends State<CitySelectorPage> {
   /// 构建城市项
   Widget _buildCityItem(CityModel city) {
     final isSelected = _currentCity?.id == city.id;
-    return ListTile(
-      title: Text(city.name),
-      trailing: isSelected
-          ? const Icon(Icons.check, color: Colors.blue)
-          : null,
+    return InkWell(
       onTap: () => _selectCity(city),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
+        ),
+        child: Row(
+          children: [
+            Text(
+              city.name,
+              style: TextStyle(
+                fontSize: 16.0,
+                color: Colors.grey[900],
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+            const Spacer(),
+            if (isSelected)
+              Icon(
+                Icons.check,
+                color: Colors.blue,
+                size: 20.0,
+              ),
+          ],
+        ),
+      ),
     );
   }
 
   /// 构建右侧字母索引
   Widget _buildLetterIndex() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
       alignment: Alignment.center,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          // 热门城市索引（如果有）
-          if (_hotCities.isNotEmpty)
-            GestureDetector(
-              onTap: () {
-                _scrollController.animateTo(
-                  0,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                child: Text(
-                  '热',
-                  style: TextStyle(
-                    fontSize: 10.0,
-                    color: Colors.orange,
-                    fontWeight: FontWeight.bold,
-                  ),
+        children: _letters.map((letter) {
+          final isSelected = _selectedLetter == letter;
+          return GestureDetector(
+            onTap: () => _scrollToLetter(letter),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+              child: Text(
+                letter,
+                style: TextStyle(
+                  fontSize: 12.0,
+                  color: isSelected ? Colors.blue : Colors.grey[600],
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ),
-          
-          // 字母索引
-          ..._letters.map((letter) {
-            final isSelected = _selectedLetter == letter;
-            return GestureDetector(
-              onTap: () => _scrollToLetter(letter),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
-                child: Text(
-                  letter,
-                  style: TextStyle(
-                    fontSize: 12.0,
-                    color: isSelected ? Colors.blue : Colors.grey[600],
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ],
+          );
+        }).toList(),
       ),
     );
   }

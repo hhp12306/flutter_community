@@ -84,12 +84,28 @@ class LocationService {
   /// 根据定位获取城市（模拟，实际应该调用后端API或第三方服务）
   Future<CityModel?> getCityByLocation(LocationModel location) async {
     // TODO: 调用后端API或第三方地图服务，根据经纬度获取城市信息
-    // 这里返回模拟数据
+    // 这里返回模拟数据（默认返回深圳）
     return CityModel(
-      id: 'beijing',
-      name: '北京',
+      id: 'shenzhen',
+      name: '深圳',
       latitude: location.latitude,
       longitude: location.longitude,
+      initialLetter: 'S',
+    );
+  }
+
+  /// 获取当前定位城市（用于显示在UI上）
+  /// 如果已保存则返回保存的城市，否则返回默认城市（深圳）
+  Future<CityModel?> getLocationCity() async {
+    final savedCity = await getSavedCity();
+    if (savedCity != null) {
+      return savedCity;
+    }
+    // 返回默认定位城市（深圳）
+    return CityModel(
+      id: 'shenzhen',
+      name: '深圳',
+      initialLetter: 'S',
     );
   }
 
@@ -114,6 +130,7 @@ class LocationService {
     
     final allCities = [
       ...hotCities,
+      CityModel(id: 'huizhou', name: '惠州', initialLetter: 'H'),
       CityModel(id: 'nanjing', name: '南京', initialLetter: 'N'),
       CityModel(id: 'wuhan', name: '武汉', initialLetter: 'W'),
       CityModel(id: 'xian', name: '西安', initialLetter: 'X'),
@@ -135,7 +152,6 @@ class LocationService {
       CityModel(id: 'kunming', name: '昆明', initialLetter: 'K'),
       CityModel(id: 'nanchang', name: '南昌', initialLetter: 'N'),
       CityModel(id: 'changchun', name: '长春', initialLetter: 'C'),
-      CityModel(id: 'shijiazhuang2', name: '石家庄', initialLetter: 'S'),
     ];
     
     return allCities;

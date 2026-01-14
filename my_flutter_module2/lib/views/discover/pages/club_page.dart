@@ -145,7 +145,7 @@ class _ClubPageState extends State<ClubPage>
               child: const Text('切换城市'),
             ),
             const SizedBox(height: 32.0),
-            const Text(
+            Text(
               '俱乐部页面内容',
               style: TextStyle(fontSize: 16.0, color: Colors.grey),
             ),

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:provider/provider.dart';
+import 'package:get/get.dart';
 import '../../../models/banner_model.dart';
 import '../../../models/diamond_model.dart';
 import '../../../models/article_model.dart';
 import '../../../models/component_model.dart';
+import '../../../controllers/discover_controller.dart';
 import '../../discover/components/banner_carousel.dart';
 import '../../discover/components/diamond_grid.dart';
 import '../../discover/components/article_list.dart';
 import '../../discover/components/component_factory.dart';
-import '../../discover/discover_provider.dart';
 
 /// 推荐页面
 /// 包含：Banner轮播图、金刚区、功能组件区、精彩资讯（瀑布流）
@@ -214,13 +214,24 @@ class _RecommendPageState extends State<RecommendPage>
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(top: 12.0), // Tab和Banner之间的间距
-                child: Consumer<DiscoverProvider>(
-                  builder: (context, provider, child) {
+                child: Builder(
+                  builder: (context) {
+                    // 使用 Get.find 获取 Controller，如果不存在则使用默认值
+                    DiscoverController? controller;
+                    try {
+                      controller = Get.find<DiscoverController>(tag: 'discover');
+                    } catch (e) {
+                      // Controller 不存在，使用 null
+                      controller = null;
+                    }
+                    
                     return BannerCarousel(
                       banners: _banners,
                       onThemeStyleChanged: (themeStyle) {
                         // Banner切换时更新themeStyle
-                        provider.updateThemeStyle(themeStyle);
+                        if (controller != null) {
+                          controller.updateThemeStyle(themeStyle);
+                        }
                       },
                     );
                   },

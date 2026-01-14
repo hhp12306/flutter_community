@@ -41,7 +41,17 @@
     "top": "置顶",
     "featured": "精选",
     "latest": "最新",
-    "following": "关注"
+    "following": "关注",
+    "follow": "关注",
+    "followed": "已关注",
+    "selectCity": "选择城市",
+    "switchCity": "切换城市",
+    "currentCity": "当前城市",
+    "currentLocation": "当前定位",
+    "nationwide": "全国",
+    "noData": "暂无数据",
+    "operationFailed": "操作失败",
+    "more": "更多"
   },
   "article": {
     "title": "精彩资讯",
@@ -55,19 +65,73 @@
     "post": "发帖",
     "featured": "精选",
     "latest": "最新",
-    "following": "关注"
+    "following": "关注",
+    "featuredPost": "精选帖子",
+    "latestPost": "最新帖子",
+    "followingPost": "关注帖子",
+    "publisher": "发布人",
+    "followingUser": "关注的人"
+  },
+  "activity": {
+    "title": "活动",
+    "activityCity": "活动城市",
+    "registrationTime": "报名时间",
+    "activityLocation": "活动地点",
+    "distance": "距离",
+    "noActivity": "暂无活动",
+    "testActivity": "测试活动",
+    "registering": "报名中",
+    "registered": "已报名",
+    "ended": "已结束",
+    "full": "已满员"
+  },
+  "city": {
+    "title": "选择城市",
+    "searchPlaceholder": "请输入城市名称搜索",
+    "currentLocation": "当前定位",
+    "nationwide": "全国",
+    "notFound": "未找到相关城市",
+    "hotCities": "热门城市"
   },
   "post": {
     "title": "发帖",
     "text": "文字",
     "image": "图片",
     "video": "视频",
+    "topic": "话题",
+    "location": "位置",
     "publish": "发布",
-    "saveDraft": "保存草稿"
+    "saveDraft": "保存草稿",
+    "draftSaved": "草稿已保存",
+    "publishSuccess": "发布成功",
+    "publishFailed": "发布失败",
+    "pleaseInputContent": "请输入内容或选择图片/视频",
+    "shareYourThoughts": "分享你的想法...",
+    "selectFromAlbum": "从相册选择",
+    "takePhoto": "拍照"
   },
   "video": {
     "play": "播放",
     "pause": "暂停",
-    "fullscreen": "全屏"
+    "fullscreen": "全屏",
+    "loadFailed": "视频加载失败"
+  },
+  "club": {
+    "title": "俱乐部",
+    "content": "俱乐部页面内容"
+  },
+  "page": {
+    "circle": "圈子页面",
+    "reputation": "口碑页面",
+    "live": "直播页面",
+    "news": "资讯页面"
+  },
+  "component": {
+    "hotTopics": "热门话题",
+    "featuredCollection": "精选专题",
+    "latestCarNews": "最新车型资讯",
+    "hotCollection": "热门专题",
+    "function": "功能",
+    "author": "作者"
   }
 }

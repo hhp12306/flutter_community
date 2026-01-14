@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../services/auth_service.dart';
 import '../config/app_routes.dart';
 
@@ -45,12 +45,10 @@ class RouteGuard {
     return _loginRequiredActions.contains(action);
   }
 
-  /// 路由守卫拦截器
-  /// 在GoRouter的redirect中使用（同步版本，用于简单检查）
-  static String? guardSync(BuildContext context, GoRouterState state) {
-    // 注意：GoRouter的redirect是同步的，无法在这里进行异步登录检查
-    // 实际的登录检查在页面内部或使用中间件进行
-    // 这里只做路由路径的简单验证
+  /// 路由守卫拦截器（GetX 中间件已处理，这里保留兼容性）
+  static String? guardSync(String? route) {
+    // GetX 使用中间件处理路由守卫
+    // 实际的登录检查在页面内部进行
     return null;
   }
 

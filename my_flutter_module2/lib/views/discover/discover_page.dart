@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'discover_provider.dart';
+import 'package:get/get.dart';
+import '../../controllers/discover_controller.dart';
 import 'components/discover_tab_bar.dart';
 import 'components/discover_app_bar.dart';
 import 'pages/recommend_page.dart';
@@ -33,28 +33,30 @@ class DiscoverPage extends StatefulWidget {
 
 class _DiscoverPageState extends State<DiscoverPage>
     with SingleTickerProviderStateMixin {
+  late final DiscoverController _controller;
   TabController? _tabController;
   PageController? _pageController;
-  final DiscoverProvider _provider = DiscoverProvider();
   bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    // 获取或创建 DiscoverController
+    _controller = Get.put(DiscoverController(), tag: 'discover');
     _initialize();
   }
 
   /// 初始化Tab和Page控制器
   Future<void> _initialize() async {
     // 初始化Tab列表
-    await _provider.loadTabs();
+    await _controller.loadTabs();
     
     if (!mounted) return;
     
     // 计算初始索引
     int initialIndex = widget.initialIndex ?? 0;
     if (widget.initialTabId != null) {
-      final index = _provider.getTabIndexById(widget.initialTabId!);
+      final index = _controller.getTabIndexById(widget.initialTabId!);
       if (index != null) {
         initialIndex = index;
       }
@@ -62,7 +64,7 @@ class _DiscoverPageState extends State<DiscoverPage>
 
     // 创建Tab控制器和Page控制器
     _tabController = TabController(
-      length: _provider.visibleTabs.length,
+      length: _controller.visibleTabs.length,
       vsync: this,
       initialIndex: initialIndex,
     );
@@ -133,70 +135,59 @@ class _DiscoverPageState extends State<DiscoverPage>
       );
     }
 
-    return ChangeNotifierProvider.value(
-      value: _provider,
-      child: Builder(
-        builder: (context) {
-          return Consumer<DiscoverProvider>(
-            builder: (context, provider, child) {
-              return Scaffold(
-                backgroundColor: Colors.white,
-                appBar: DiscoverAppBar(
-                  scrollOffset: provider.scrollOffset,
-                  themeStyle: provider.themeStyle,
-                  onSearchTap: () {
-                    // 跳转搜索页面
-                    // TODO: 实现搜索页面跳转
-                  },
-                  onMessageTap: () async {
-                    // 跳转消息中心（需要登录）
-                    final canAccess = await RouteGuard.checkLoginForAction('message');
-                    if (canAccess) {
-                      // TODO: 跳转消息中心页面
-                    }
-                  },
-                  child: provider.visibleTabs.isEmpty
-                      ? const SizedBox.shrink()
-                      : DiscoverTabBar(
-                          tabs: provider.visibleTabs,
-                          controller: _tabController!,
-                          themeStyle: provider.themeStyle,
-                          onTabTap: (index) {
-                            _pageController?.animateToPage(
-                              index,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          },
-                        ),
-                ),
-                body: provider.visibleTabs.isEmpty || _pageController == null
-                    ? const Center(child: CircularProgressIndicator())
-                    : NotificationListener<ScrollNotification>(
-                        onNotification: (notification) {
-                          // 监听滚动，更新滚动偏移量
-                          if (notification is ScrollUpdateNotification) {
-                            provider.updateScrollOffset(notification.metrics.pixels);
-                          }
-                          return false;
-                        },
-                        child: PageView.builder(
-                          controller: _pageController!,
-                          onPageChanged: _onPageChanged,
-                          itemCount: provider.visibleTabs.length,
-                          // PageView.builder 默认会保持页面状态，配合 AutomaticKeepAliveClientMixin 使用
-                          itemBuilder: (context, index) {
-                            final tab = provider.visibleTabs[index];
-                            return _buildPageByTab(tab);
-                          },
-                        ),
-                      ),
-              );
-            },
-          );
+    return Obx(() => Scaffold(
+      backgroundColor: Colors.white,
+      appBar: DiscoverAppBar(
+        scrollOffset: _controller.scrollOffset,
+        themeStyle: _controller.themeStyle,
+        onSearchTap: () {
+          // 跳转搜索页面
+          // TODO: 实现搜索页面跳转
         },
+        onMessageTap: () async {
+          // 跳转消息中心（需要登录）
+          final canAccess = await RouteGuard.checkLoginForAction('message');
+          if (canAccess) {
+            // TODO: 跳转消息中心页面
+          }
+        },
+        child: _controller.visibleTabs.isEmpty
+            ? const SizedBox.shrink()
+            : DiscoverTabBar(
+                tabs: _controller.visibleTabs,
+                controller: _tabController!,
+                themeStyle: _controller.themeStyle,
+                onTabTap: (index) {
+                  _pageController?.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+              ),
       ),
-    );
+      body: _controller.visibleTabs.isEmpty || _pageController == null
+          ? const Center(child: CircularProgressIndicator())
+          : NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                // 监听滚动，更新滚动偏移量
+                if (notification is ScrollUpdateNotification) {
+                  _controller.updateScrollOffset(notification.metrics.pixels);
+                }
+                return false;
+              },
+              child: PageView.builder(
+                controller: _pageController!,
+                onPageChanged: _onPageChanged,
+                itemCount: _controller.visibleTabs.length,
+                // PageView.builder 默认会保持页面状态，配合 AutomaticKeepAliveClientMixin 使用
+                itemBuilder: (context, index) {
+                  final tab = _controller.visibleTabs[index];
+                  return _buildPageByTab(tab);
+                },
+              ),
+            ),
+    ));
   }
 }
 
