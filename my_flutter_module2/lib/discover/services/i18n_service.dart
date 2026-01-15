@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -44,10 +43,8 @@ class I18nService {
     try {
       // 动态加载语言文件
       // 格式：assets/locales/{languageCode}/strings.json
-      // Flutter Web 可能需要不同的路径格式
-      final String assetPath = kIsWeb 
-          ? 'packages/my_flutter_module2/assets/locales/$languageCode/strings.json'
-          : 'assets/locales/$languageCode/strings.json';
+      // Flutter Web 和移动端使用相同的路径
+      final String assetPath = 'assets/locales/$languageCode/strings.json';
       
       final String jsonString = await rootBundle.loadString(assetPath);
       
@@ -78,9 +75,7 @@ class I18nService {
   Future<void> _loadModuleFiles(String languageCode, Map<String, dynamic> parentMap) async {
     try {
       // 读取模块目录
-      final String manifestPath = kIsWeb
-          ? 'packages/my_flutter_module2/AssetManifest.json'
-          : 'AssetManifest.json';
+      final String manifestPath = 'AssetManifest.json';
       final manifestContent = await rootBundle.loadString(manifestPath);
       final Map<String, dynamic> manifestMap = json.decode(manifestContent);
       
@@ -88,23 +83,17 @@ class I18nService {
       final String modulePrefix = 'assets/locales/$languageCode/';
       
       final moduleFiles = manifestMap.keys.where((key) {
-        // 兼容 Web 和移动端的路径格式
-        final normalizedKey = kIsWeb && key.startsWith('packages/')
-            ? key.replaceFirst('packages/my_flutter_module2/', '')
-            : key;
-        return normalizedKey.startsWith(modulePrefix) && 
-               normalizedKey.endsWith('.json') && 
-               normalizedKey != '${modulePrefix}strings.json';
+        // 查找该语言目录下的所有JSON文件（排除主文件）
+        return key.startsWith(modulePrefix) && 
+               key.endsWith('.json') && 
+               key != '${modulePrefix}strings.json';
       }).toList();
       
       // 加载每个模块文件
       for (final filePath in moduleFiles) {
         try {
-          // 在 Web 上可能需要使用完整路径
-          final String loadPath = kIsWeb && !filePath.startsWith('packages/')
-              ? 'packages/my_flutter_module2/$filePath'
-              : filePath;
-          final String moduleJsonString = await rootBundle.loadString(loadPath);
+          // 直接使用文件路径
+          final String moduleJsonString = await rootBundle.loadString(filePath);
           final Map<String, dynamic> moduleMap = json.decode(moduleJsonString);
           
           // 提取模块名称（文件名去掉路径和扩展名）
