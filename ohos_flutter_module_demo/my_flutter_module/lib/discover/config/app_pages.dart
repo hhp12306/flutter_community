@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import '../views/discover/discover_page.dart';
 import '../views/post/post_page.dart';
 import '../views/video/video_player_page.dart';
-import '../viewmodels/discover_viewmodel.dart';
+import '../controllers/discover_controller.dart';
 import '../utils/route_guard.dart';
 import 'app_routes.dart';
 
@@ -15,7 +15,7 @@ class AppPages {
       page: () => const DiscoverPage(),
       // 支持通过参数指定初始Tab
       binding: BindingsBuilder(() {
-        Get.put(DiscoverViewModel(), tag: 'discover');
+        Get.put(DiscoverController(), tag: 'discover');
       }),
     ),
     

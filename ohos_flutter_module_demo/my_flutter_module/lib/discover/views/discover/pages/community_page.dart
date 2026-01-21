@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:get/get.dart';
-import '../../../viewmodels/community_viewmodel.dart';
+import '../../../controllers/community_controller.dart';
 import '../../common/user_info.dart';
 import '../../../config/app_routes.dart';
 import '../../../utils/route_guard.dart';
@@ -19,7 +19,7 @@ class CommunityPage extends StatefulWidget {
 class _CommunityPageState extends State<CommunityPage>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
-  late final CommunityViewModel _viewModel;
+  late final CommunityController _controller;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态
@@ -28,16 +28,16 @@ class _CommunityPageState extends State<CommunityPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-    // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
-    _viewModel = Get.put(CommunityViewModel());
+    // 使用 Get.put 创建 Controller，页面销毁时自动清理
+    _controller = Get.put(CommunityController());
     // 初始化数据
-    _viewModel.init();
+    _controller.init();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    // Get.put 创建的 ViewModel 会在页面销毁时自动清理
+    // Get.put 创建的 Controller 会在页面销毁时自动清理
     super.dispose();
   }
 
@@ -123,28 +123,28 @@ class _CommunityPageState extends State<CommunityPage>
     
     switch (type) {
       case '精选':
-        controller = _viewModel.featuredRefreshController;
-        posts = _viewModel.featuredPosts;
+        controller = _controller.featuredRefreshController;
+        posts = _controller.featuredPosts;
         break;
       case '最新':
-        controller = _viewModel.latestRefreshController;
-        posts = _viewModel.latestPosts;
+        controller = _controller.latestRefreshController;
+        posts = _controller.latestPosts;
         break;
       case '关注':
-        controller = _viewModel.followingRefreshController;
-        posts = _viewModel.followingPosts;
+        controller = _controller.followingRefreshController;
+        posts = _controller.followingPosts;
         break;
       default:
-        controller = _viewModel.featuredRefreshController;
-        posts = _viewModel.featuredPosts;
+        controller = _controller.featuredRefreshController;
+        posts = _controller.featuredPosts;
     }
     
     return Obx(() => SmartRefresher(
       controller: controller,
       enablePullDown: true, // 启用下拉刷新
       enablePullUp: true, // 启用上拉加载更多
-      onRefresh: () => _viewModel.onRefresh(type),
-      onLoading: () => _viewModel.onLoading(type),
+      onRefresh: () => _controller.onRefresh(type),
+      onLoading: () => _controller.onLoading(type),
       header: const ClassicHeader(
         refreshingText: '正在刷新...',
         completeText: '刷新完成',
@@ -197,8 +197,8 @@ class _CommunityPageState extends State<CommunityPage>
                   showFollowButton: true, // 显示关注按钮
                   isFollowed: post['isFollowed'] ?? false,
                   onFollowChanged: (isFollowed) {
-                    // 更新 ViewModel 中的状态
-                    _viewModel.updateFollowStatus(type, index, isFollowed);
+                    // 更新 Controller 中的状态
+                    _controller.updateFollowStatus(type, index, isFollowed);
                     // TODO: 调用后端API更新关注状态
                   },
                 ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
-import '../../viewmodels/video_player_viewmodel.dart';
+import '../../controllers/video_player_controller.dart';
 
 /// 视频播放页面（MVVM 架构）
 /// 支持视频缓存播放、上下手势滑动切换
@@ -19,69 +19,69 @@ class VideoPlayerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
-    final viewModel = Get.put(VideoPlayerViewModel());
+    // 使用 Get.put 创建 Controller，页面销毁时自动清理
+    final controller = Get.put(VideoPlayerPageController());
     
     // 初始化视频列表
-    viewModel.initVideos(videoUrl, videoList);
+    controller.initVideos(videoUrl, videoList);
     
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Obx(() => viewModel.hasMultipleVideos
-          ? _buildVerticalPageView(viewModel) // 多个视频时使用垂直滑动切换
-          : _buildSingleVideo(viewModel)), // 单个视频直接播放
+      body: Obx(() => controller.hasMultipleVideos
+          ? _buildVerticalPageView(controller) // 多个视频时使用垂直滑动切换
+          : _buildSingleVideo(controller)), // 单个视频直接播放
     );
   }
 
   /// 构建垂直滑动视图（上下滑动切换视频）
-  Widget _buildVerticalPageView(VideoPlayerViewModel viewModel) {
+  Widget _buildVerticalPageView(VideoPlayerPageController controller) {
     return PageView.builder(
       scrollDirection: Axis.vertical,
-      onPageChanged: (index) => viewModel.switchToVideo(index),
-      itemCount: viewModel.videoUrls.length,
+      onPageChanged: (index) => controller.switchToVideo(index),
+      itemCount: controller.videoUrls.length,
       itemBuilder: (context, index) {
-        return _buildVideoPlayer(viewModel, index == viewModel.currentIndex);
+        return _buildVideoPlayer(controller, index == controller.currentIndex);
       },
     );
   }
 
   /// 构建单个视频播放器
-  Widget _buildSingleVideo(VideoPlayerViewModel viewModel) {
-    return _buildVideoPlayer(viewModel, true);
+  Widget _buildSingleVideo(VideoPlayerPageController controller) {
+    return _buildVideoPlayer(controller, true);
   }
 
   /// 构建视频播放器
-  Widget _buildVideoPlayer(VideoPlayerViewModel viewModel, bool isActive) {
-    if (!isActive || !viewModel.isInitialized || viewModel.videoPlayerController == null) {
+  Widget _buildVideoPlayer(VideoPlayerPageController controller, bool isActive) {
+    if (!isActive || !controller.isInitialized || controller.videoPlayerController == null) {
       return const Center(
         child: CircularProgressIndicator(color: Colors.white),
       );
     }
 
-    if (viewModel.errorMessage != null) {
+    if (controller.errorMessage != null) {
       return Center(
         child: Text(
-          viewModel.errorMessage!,
+          controller.errorMessage!,
           style: const TextStyle(color: Colors.white),
         ),
       );
     }
 
     return GestureDetector(
-      onTap: () => viewModel.togglePlayPause(),
+      onTap: () => controller.togglePlayPause(),
       child: Stack(
         fit: StackFit.expand,
         children: [
           // 视频播放器
           Center(
             child: AspectRatio(
-              aspectRatio: viewModel.videoPlayerController!.value.aspectRatio,
-              child: VideoPlayer(viewModel.videoPlayerController!),
+              aspectRatio: controller.videoPlayerController!.value.aspectRatio,
+              child: VideoPlayer(controller.videoPlayerController!),
             ),
           ),
           
           // 播放/暂停按钮
-          Obx(() => !viewModel.isPlaying
+          Obx(() => !controller.isPlaying
               ? Center(
                   child: Container(
                     padding: const EdgeInsets.all(16.0),

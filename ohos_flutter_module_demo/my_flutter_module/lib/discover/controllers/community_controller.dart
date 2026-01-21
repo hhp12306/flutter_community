@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-/// 社区页面 ViewModel（MVVM 架构）
-/// 负责管理社区页面的状态和业务逻辑
-class CommunityViewModel extends GetxController {
+/// 社区页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class CommunityController extends GetxController {
   // 为每个Tab创建独立的刷新控制器
   final RefreshController featuredRefreshController = RefreshController(initialRefresh: false);
   final RefreshController latestRefreshController = RefreshController(initialRefresh: false);

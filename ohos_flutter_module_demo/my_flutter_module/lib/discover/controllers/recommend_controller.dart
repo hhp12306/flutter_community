@@ -4,11 +4,11 @@ import '../models/banner_model.dart';
 import '../models/diamond_model.dart';
 import '../models/article_model.dart';
 import '../models/component_model.dart';
-import 'discover_viewmodel.dart';
+import 'discover_controller.dart';
 
-/// 推荐页面 ViewModel（MVVM 架构）
-/// 负责管理推荐页面的状态和业务逻辑
-class RecommendViewModel extends GetxController {
+/// 推荐页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class RecommendController extends GetxController {
   final RefreshController refreshController = RefreshController(initialRefresh: false);
   
   // 响应式变量
@@ -270,12 +270,12 @@ class RecommendViewModel extends GetxController {
   
   /// 更新主题样式（由 Banner 组件调用）
   void updateThemeStyle(int? themeStyle) {
-    // 通知 DiscoverViewModel 更新主题样式
+    // 通知 DiscoverController 更新主题样式
     try {
-      final discoverViewModel = Get.find<DiscoverViewModel>(tag: 'discover');
-      discoverViewModel.updateThemeStyle(themeStyle);
+      final discoverController = Get.find<DiscoverController>(tag: 'discover');
+      discoverController.updateThemeStyle(themeStyle);
     } catch (e) {
-      // DiscoverViewModel 不存在，忽略
+      // DiscoverController 不存在，忽略
     }
   }
   

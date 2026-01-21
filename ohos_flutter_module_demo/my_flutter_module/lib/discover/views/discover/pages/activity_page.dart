@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import '../../../viewmodels/activity_viewmodel.dart';
+import '../../../controllers/activity_controller.dart';
 import '../../../models/activity_model.dart';
 import '../../../models/city_model.dart';
 import '../../../utils/time_util.dart';
 import '../../common/city_selector_page.dart';
 
-/// 活动页面（MVVM 架构）
+/// 活动页面（MVC 架构）
 /// 支持城市定位，切换跳转城市选择页
 class ActivityPage extends StatefulWidget {
   const ActivityPage({Key? key}) : super(key: key);
@@ -19,7 +19,7 @@ class ActivityPage extends StatefulWidget {
 
 class _ActivityPageState extends State<ActivityPage>
     with AutomaticKeepAliveClientMixin {
-  late final ActivityViewModel _viewModel;
+  late final ActivityController _controller;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态
@@ -27,15 +27,15 @@ class _ActivityPageState extends State<ActivityPage>
   @override
   void initState() {
     super.initState();
-    // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
-    _viewModel = Get.put(ActivityViewModel());
+    // 使用 Get.put 创建 Controller，页面销毁时自动清理
+    _controller = Get.put(ActivityController());
     // 初始化数据
-    _viewModel.init();
+    _controller.init();
   }
 
   @override
   void dispose() {
-    // Get.put 创建的 ViewModel 会在页面销毁时自动清理
+    // Get.put 创建的 Controller 会在页面销毁时自动清理
     super.dispose();
   }
 
@@ -45,7 +45,7 @@ class _ActivityPageState extends State<ActivityPage>
     
     return Obx(() => Scaffold(
       backgroundColor: Colors.white,
-      body: _viewModel.isLoading
+      body: _controller.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -70,17 +70,17 @@ class _ActivityPageState extends State<ActivityPage>
                         onTap: () async {
                           // 在 View 层处理城市选择
                           final selectedCity = await Get.to<CityModel>(
-                            () => CitySelectorPage(currentCity: _viewModel.currentCity),
+                            () => CitySelectorPage(currentCity: _controller.currentCity),
                           );
                           if (selectedCity != null) {
-                            _viewModel.updateCityAndReload(selectedCity);
+                            _controller.updateCityAndReload(selectedCity);
                           }
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              _viewModel.currentCity?.name ?? '选择城市',
+                              _controller.currentCity?.name ?? '选择城市',
                               style: const TextStyle(
                                 fontSize: 14.0,
                                 color: Colors.black87,
@@ -103,11 +103,11 @@ class _ActivityPageState extends State<ActivityPage>
                 // 活动列表（带下拉刷新和上拉加载更多）
                 Expanded(
                   child: SmartRefresher(
-                    controller: _viewModel.refreshController,
+                    controller: _controller.refreshController,
                     enablePullDown: true, // 启用下拉刷新
                     enablePullUp: true, // 启用上拉加载更多
-                    onRefresh: () => _viewModel.onRefresh(),
-                    onLoading: () => _viewModel.onLoading(),
+                    onRefresh: () => _controller.onRefresh(),
+                    onLoading: () => _controller.onLoading(),
                     header: const ClassicHeader(
                       refreshingText: '正在刷新...',
                       completeText: '刷新完成',
@@ -122,7 +122,7 @@ class _ActivityPageState extends State<ActivityPage>
                       canLoadingText: '释放加载更多',
                       textStyle: const TextStyle(color: Colors.black54),
                     ),
-                    child: _viewModel.activities.isEmpty
+                    child: _controller.activities.isEmpty
                         ? const Center(
                             child: Text(
                               '暂无活动',
@@ -134,9 +134,9 @@ class _ActivityPageState extends State<ActivityPage>
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.all(0),
-                            itemCount: _viewModel.activities.length,
+                            itemCount: _controller.activities.length,
                             itemBuilder: (context, index) {
-                              return _buildActivityCard(_viewModel.activities[index]);
+                              return _buildActivityCard(_controller.activities[index]);
                             },
                           ),
                   ),

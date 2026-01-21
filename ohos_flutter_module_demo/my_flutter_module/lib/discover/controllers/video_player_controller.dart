@@ -1,15 +1,15 @@
 import 'package:get/get.dart';
-import 'package:video_player/video_player.dart';
+import 'package:video_player/video_player.dart' as video_player;
 
-/// 视频播放页面 ViewModel（MVVM 架构）
-/// 负责管理视频播放页面的状态和业务逻辑
-class VideoPlayerViewModel extends GetxController {
+/// 视频播放页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class VideoPlayerPageController extends GetxController {
   // 响应式变量
   final _videoUrls = <String>[].obs;
   final _currentIndex = 0.obs;
   final _isInitialized = false.obs;
   final _isPlaying = false.obs;
-  final _videoPlayerController = Rx<VideoPlayerController?>(null);
+  final _videoPlayerController = Rx<video_player.VideoPlayerController?>(null);
   final _errorMessage = Rx<String?>(null);
   
   // Getters
@@ -17,7 +17,7 @@ class VideoPlayerViewModel extends GetxController {
   int get currentIndex => _currentIndex.value;
   bool get isInitialized => _isInitialized.value;
   bool get isPlaying => _isPlaying.value;
-  VideoPlayerController? get videoPlayerController => _videoPlayerController.value;
+  video_player.VideoPlayerController? get videoPlayerController => _videoPlayerController.value;
   String? get errorMessage => _errorMessage.value;
   bool get hasMultipleVideos => _videoUrls.length > 1;
   
@@ -57,7 +57,7 @@ class VideoPlayerViewModel extends GetxController {
     
     try {
       // 创建新的视频控制器
-      final controller = VideoPlayerController.networkUrl(
+      final controller = video_player.VideoPlayerController.networkUrl(
         Uri.parse(_videoUrls[index]),
       );
       

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../viewmodels/discover_viewmodel.dart';
+import '../../controllers/discover_controller.dart';
 import 'components/discover_tab_bar.dart';
 import 'components/discover_app_bar.dart';
 import 'pages/recommend_page.dart';
@@ -33,7 +33,7 @@ class DiscoverPage extends StatefulWidget {
 
 class _DiscoverPageState extends State<DiscoverPage>
     with SingleTickerProviderStateMixin {
-  late final DiscoverViewModel _viewModel;
+  late final DiscoverController _controller;
   TabController? _tabController;
   PageController? _pageController;
   bool _isInitialized = false;
@@ -41,22 +41,22 @@ class _DiscoverPageState extends State<DiscoverPage>
   @override
   void initState() {
     super.initState();
-    // 获取或创建 DiscoverViewModel
-    _viewModel = Get.put(DiscoverViewModel(), tag: 'discover');
+    // 获取或创建 DiscoverController
+    _controller = Get.put(DiscoverController(), tag: 'discover');
     _initialize();
   }
 
   /// 初始化Tab和Page控制器
   Future<void> _initialize() async {
     // 初始化Tab列表
-    await _viewModel.loadTabs();
+    await _controller.loadTabs();
     
     if (!mounted) return;
     
     // 计算初始索引
     int initialIndex = widget.initialIndex ?? 0;
     if (widget.initialTabId != null) {
-      final index = _viewModel.getTabIndexById(widget.initialTabId!);
+      final index = _controller.getTabIndexById(widget.initialTabId!);
       if (index != null) {
         initialIndex = index;
       }
@@ -64,7 +64,7 @@ class _DiscoverPageState extends State<DiscoverPage>
 
     // 创建Tab控制器和Page控制器
     _tabController = TabController(
-      length: _viewModel.visibleTabs.length,
+      length: _controller.visibleTabs.length,
       vsync: this,
       initialIndex: initialIndex,
     );
@@ -138,8 +138,8 @@ class _DiscoverPageState extends State<DiscoverPage>
     return Obx(() => Scaffold(
       backgroundColor: Colors.white,
       appBar: DiscoverAppBar(
-        scrollOffset: _viewModel.scrollOffset,
-        themeStyle: _viewModel.themeStyle,
+        scrollOffset: _controller.scrollOffset,
+        themeStyle: _controller.themeStyle,
         onSearchTap: () {
           // 跳转搜索页面
           // TODO: 实现搜索页面跳转
@@ -151,12 +151,12 @@ class _DiscoverPageState extends State<DiscoverPage>
             // TODO: 跳转消息中心页面
           }
         },
-        child: _viewModel.visibleTabs.isEmpty
+        child: _controller.visibleTabs.isEmpty
             ? const SizedBox.shrink()
             : DiscoverTabBar(
-                tabs: _viewModel.visibleTabs,
+                tabs: _controller.visibleTabs,
                 controller: _tabController!,
-                themeStyle: _viewModel.themeStyle,
+                themeStyle: _controller.themeStyle,
                 onTabTap: (index) {
                   _pageController?.animateToPage(
                     index,
@@ -166,23 +166,23 @@ class _DiscoverPageState extends State<DiscoverPage>
                 },
               ),
       ),
-      body: _viewModel.visibleTabs.isEmpty || _pageController == null
+      body: _controller.visibleTabs.isEmpty || _pageController == null
           ? const Center(child: CircularProgressIndicator())
           : NotificationListener<ScrollNotification>(
               onNotification: (notification) {
                 // 监听滚动，更新滚动偏移量
                 if (notification is ScrollUpdateNotification) {
-                  _viewModel.updateScrollOffset(notification.metrics.pixels);
+                  _controller.updateScrollOffset(notification.metrics.pixels);
                 }
                 return false;
               },
               child: PageView.builder(
                 controller: _pageController!,
                 onPageChanged: _onPageChanged,
-                itemCount: _viewModel.visibleTabs.length,
+                itemCount: _controller.visibleTabs.length,
                 // PageView.builder 默认会保持页面状态，配合 AutomaticKeepAliveClientMixin 使用
                 itemBuilder: (context, index) {
-                  final tab = _viewModel.visibleTabs[index];
+                  final tab = _controller.visibleTabs[index];
                   return _buildPageByTab(tab);
                 },
               ),

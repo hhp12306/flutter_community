@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:get/get.dart';
-import '../../../viewmodels/recommend_viewmodel.dart';
-import '../../../viewmodels/discover_viewmodel.dart';
+import '../../../controllers/recommend_controller.dart';
+import '../../../controllers/discover_controller.dart';
 import '../../discover/components/banner_carousel.dart';
 import '../../discover/components/diamond_grid.dart';
 import '../../discover/components/article_list.dart';
@@ -19,7 +19,7 @@ class RecommendPage extends StatefulWidget {
 
 class _RecommendPageState extends State<RecommendPage>
     with AutomaticKeepAliveClientMixin {
-  late final RecommendViewModel _viewModel;
+  late final RecommendController _controller;
 
   @override
   bool get wantKeepAlive => true; // 保持页面状态
@@ -27,15 +27,15 @@ class _RecommendPageState extends State<RecommendPage>
   @override
   void initState() {
     super.initState();
-    // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
-    _viewModel = Get.put(RecommendViewModel());
+    // 使用 Get.put 创建 Controller，页面销毁时自动清理
+    _controller = Get.put(RecommendController());
     // 初始化数据
-    _viewModel.init();
+    _controller.init();
   }
 
   @override
   void dispose() {
-    // Get.put 创建的 ViewModel 会在页面销毁时自动清理
+    // Get.put 创建的 Controller 会在页面销毁时自动清理
     super.dispose();
   }
 
@@ -45,16 +45,16 @@ class _RecommendPageState extends State<RecommendPage>
     super.build(context); // 必须调用，用于保持页面状态
     
     return Obx(() {
-      if (_viewModel.isLoading && _viewModel.articles.isEmpty) {
+      if (_controller.isLoading && _controller.articles.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
 
       return SmartRefresher(
-        controller: _viewModel.refreshController,
+        controller: _controller.refreshController,
         enablePullDown: true, // 启用下拉刷新
         enablePullUp: true, // 启用上拉加载更多
-        onRefresh: () => _viewModel.onRefresh(),
-        onLoading: () => _viewModel.onLoading(),
+        onRefresh: () => _controller.onRefresh(),
+        onLoading: () => _controller.onLoading(),
       header: const ClassicHeader(
         refreshingText: '正在刷新...',
         completeText: '刷新完成',
@@ -72,27 +72,27 @@ class _RecommendPageState extends State<RecommendPage>
         child: CustomScrollView(
           slivers: [
             // Banner轮播图
-            if (_viewModel.banners.isNotEmpty)
+            if (_controller.banners.isNotEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 12.0), // Tab和Banner之间的间距
                   child: Builder(
                     builder: (context) {
-                      // 使用 Get.find 获取 ViewModel，如果不存在则使用默认值
-                      DiscoverViewModel? discoverViewModel;
+                      // 使用 Get.find 获取 Controller，如果不存在则使用默认值
+                      DiscoverController? discoverController;
                       try {
-                        discoverViewModel = Get.find<DiscoverViewModel>(tag: 'discover');
+                        discoverController = Get.find<DiscoverController>(tag: 'discover');
                       } catch (e) {
-                        // ViewModel 不存在，使用 null
-                        discoverViewModel = null;
+                        // Controller 不存在，使用 null
+                        discoverController = null;
                       }
                       
                       return BannerCarousel(
-                        banners: _viewModel.banners,
+                        banners: _controller.banners,
                         onThemeStyleChanged: (themeStyle) {
                           // Banner切换时更新themeStyle
-                          if (discoverViewModel != null) {
-                            discoverViewModel.updateThemeStyle(themeStyle);
+                          if (discoverController != null) {
+                            discoverController.updateThemeStyle(themeStyle);
                           }
                         },
                       );
@@ -102,9 +102,9 @@ class _RecommendPageState extends State<RecommendPage>
               ),
             
             // 金刚区
-            if (_viewModel.diamonds.isNotEmpty)
+            if (_controller.diamonds.isNotEmpty)
               SliverToBoxAdapter(
-                child: DiamondGrid(diamonds: _viewModel.diamonds),
+                child: DiamondGrid(diamonds: _controller.diamonds),
               ),
             
             // 功能组件区（热门话题、车型圈列表、专题合集等）
@@ -112,8 +112,8 @@ class _RecommendPageState extends State<RecommendPage>
             ..._buildComponentSlivers(),
             
             // 精彩资讯（瀑布流）
-            if (_viewModel.articles.isNotEmpty)
-              ArticleList(articles: _viewModel.articles),
+            if (_controller.articles.isNotEmpty)
+              ArticleList(articles: _controller.articles),
           ],
         ),
       );
@@ -122,7 +122,7 @@ class _RecommendPageState extends State<RecommendPage>
 
   /// 构建功能组件Sliver列表
   List<Widget> _buildComponentSlivers() {
-    final visibleComponents = _viewModel.components
+    final visibleComponents = _controller.components
         .where((c) => c.visible)
         .toList()
       ..sort((a, b) => a.sort.compareTo(b.sort));

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../viewmodels/post_viewmodel.dart';
+import '../../controllers/post_controller.dart';
 
 /// 发帖页面（MVVM 架构）
 /// 支持发文字帖、视频帖、图片帖，支持图文混排，草稿箱功能
@@ -9,13 +9,13 @@ class PostPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
-    final viewModel = Get.put(PostViewModel());
+    // 使用 Get.put 创建 Controller，页面销毁时自动清理
+    final controller = Get.put(PostController());
     final TextEditingController textController = TextEditingController();
     
-    // 监听文本变化，更新 ViewModel
+    // 监听文本变化，更新 Controller
     textController.addListener(() {
-      viewModel.updateTextContent(textController.text);
+      controller.updateTextContent(textController.text);
     });
     
     return Scaffold(
@@ -24,8 +24,8 @@ class PostPage extends StatelessWidget {
         actions: [
           // 保存草稿
           Obx(() => TextButton(
-            onPressed: viewModel.isSavingDraft ? null : () => viewModel.saveDraft(),
-            child: viewModel.isSavingDraft
+            onPressed: controller.isSavingDraft ? null : () => controller.saveDraft(),
+            child: controller.isSavingDraft
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -35,8 +35,8 @@ class PostPage extends StatelessWidget {
           )),
           // 发布
           Obx(() => TextButton(
-            onPressed: viewModel.isPublishing ? null : () => viewModel.publish(),
-            child: viewModel.isPublishing
+            onPressed: controller.isPublishing ? null : () => controller.publish(),
+            child: controller.isPublishing
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -64,7 +64,7 @@ class PostPage extends StatelessWidget {
             const SizedBox(height: 16.0),
             
             // 视频预览
-            Obx(() => viewModel.selectedVideo != null
+            Obx(() => controller.selectedVideo != null
                 ? Stack(
                     children: [
                       Container(
@@ -84,7 +84,7 @@ class PostPage extends StatelessWidget {
                         right: 8.0,
                         child: IconButton(
                           icon: const Icon(Icons.close, color: Colors.white),
-                          onPressed: () => viewModel.removeVideo(),
+                          onPressed: () => controller.removeVideo(),
                         ),
                       ),
                     ],
@@ -92,7 +92,7 @@ class PostPage extends StatelessWidget {
                 : const SizedBox.shrink()),
             
             // 图片网格
-            Obx(() => viewModel.selectedImages.isNotEmpty
+            Obx(() => controller.selectedImages.isNotEmpty
                 ? GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -101,14 +101,14 @@ class PostPage extends StatelessWidget {
                       mainAxisSpacing: 8.0,
                       crossAxisSpacing: 8.0,
                     ),
-                    itemCount: viewModel.selectedImages.length,
+                    itemCount: controller.selectedImages.length,
                     itemBuilder: (context, index) {
                       return Stack(
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8.0),
                             child: Image.file(
-                              viewModel.selectedImages[index],
+                              controller.selectedImages[index],
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -118,7 +118,7 @@ class PostPage extends StatelessWidget {
                             top: 4.0,
                             right: 4.0,
                             child: GestureDetector(
-                              onTap: () => viewModel.removeImage(index),
+                              onTap: () => controller.removeImage(index),
                               child: Container(
                                 padding: const EdgeInsets.all(4.0),
                                 decoration: const BoxDecoration(
@@ -152,7 +152,7 @@ class PostPage extends StatelessWidget {
                   onTap: () {
                     showModalBottomSheet(
                       context: context,
-                      builder: (context) => _buildImageSourceSheet(viewModel),
+                      builder: (context) => _buildImageSourceSheet(controller),
                     );
                   },
                 ),
@@ -160,7 +160,7 @@ class PostPage extends StatelessWidget {
                 _buildToolButton(
                   icon: Icons.videocam,
                   label: '视频',
-                  onTap: () => viewModel.pickVideo(),
+                  onTap: () => controller.pickVideo(),
                 ),
                 // 话题
                 _buildToolButton(
@@ -205,7 +205,7 @@ class PostPage extends StatelessWidget {
   }
 
   /// 构建图片来源选择底部 sheet
-  Widget _buildImageSourceSheet(PostViewModel viewModel) {
+  Widget _buildImageSourceSheet(PostController controller) {
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -215,7 +215,7 @@ class PostPage extends StatelessWidget {
             title: const Text('从相册选择'),
             onTap: () {
               Navigator.pop(Get.context!);
-              viewModel.pickImages();
+              controller.pickImages();
             },
           ),
           ListTile(
@@ -223,7 +223,7 @@ class PostPage extends StatelessWidget {
             title: const Text('拍照'),
             onTap: () {
               Navigator.pop(Get.context!);
-              viewModel.takePhoto();
+              controller.takePhoto();
             },
           ),
         ],

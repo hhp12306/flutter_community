@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'discover/config/app_routes.dart';
 import 'discover/config/app_pages.dart';
-import 'discover/viewmodels/i18n_viewmodel.dart';
+import 'discover/controllers/i18n_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // 初始化i18n
-  final i18nViewModel = I18nViewModel();
-  await i18nViewModel.init();
+  final i18nController = I18nController();
+  await i18nController.init();
   
-  // 注册全局 ViewModel
-  Get.put(i18nViewModel, permanent: true);
+  // 注册全局 Controller
+  Get.put(i18nController, permanent: true);
   
   runApp(MyApp());
 }
@@ -22,10 +22,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final i18nViewModel = Get.find<I18nViewModel>();
+    final i18nController = Get.find<I18nController>();
     
     return GetMaterialApp(
-      title: i18nViewModel.get('app.name'),
+      title: i18nController.get('app.name'),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,

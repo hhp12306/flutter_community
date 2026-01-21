@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 import '../services/i18n_service.dart';
 
-/// 国际化 ViewModel（MVVM 架构）
-/// 负责管理国际化相关的状态和逻辑
-class I18nViewModel extends GetxController {
+/// 国际化 Controller（MVC 架构）
+/// 负责处理国际化相关的用户输入和业务逻辑协调
+class I18nController extends GetxController {
   final I18nService _i18nService = I18nService();
   
   String get currentLanguage => _i18nService.currentLanguage;

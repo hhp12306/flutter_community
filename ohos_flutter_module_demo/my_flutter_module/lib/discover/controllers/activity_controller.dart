@@ -4,9 +4,9 @@ import '../models/city_model.dart';
 import '../models/activity_model.dart';
 import '../services/location_service.dart';
 
-/// 活动页面 ViewModel（MVVM 架构）
-/// 负责管理活动页面的状态和业务逻辑
-class ActivityViewModel extends GetxController {
+/// 活动页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class ActivityController extends GetxController {
   final LocationService _locationService = LocationService();
   final RefreshController refreshController = RefreshController(initialRefresh: false);
   
@@ -60,15 +60,6 @@ class ActivityViewModel extends GetxController {
     } finally {
       _isLoading.value = false;
     }
-  }
-  
-  /// 打开城市选择页
-  /// 返回选中的城市，如果没有选择则返回 null
-  /// 注意：这个方法需要在 View 层调用，因为需要导入 View 组件
-  Future<CityModel?> openCitySelectorPage(CityModel? currentCity) async {
-    // 这个方法应该由 View 层调用，传入 CitySelectorPage
-    // 这里只负责更新状态
-    return null;
   }
   
   /// 更新当前城市并重新加载数据

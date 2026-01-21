@@ -2,9 +2,9 @@ import 'package:get/get.dart';
 import '../models/tab_model.dart';
 import '../services/discover_service.dart';
 
-/// 发现页面 ViewModel（MVVM 架构）
-/// 负责管理发现页面的状态和业务逻辑
-class DiscoverViewModel extends GetxController {
+/// 发现页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class DiscoverController extends GetxController {
   final DiscoverService _service = DiscoverService();
   
   // 响应式变量

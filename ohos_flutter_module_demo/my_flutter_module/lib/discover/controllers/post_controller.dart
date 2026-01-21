@@ -2,9 +2,9 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-/// 发帖页面 ViewModel（MVVM 架构）
-/// 负责管理发帖页面的状态和业务逻辑
-class PostViewModel extends GetxController {
+/// 发帖页面 Controller（MVC 架构）
+/// 负责处理用户输入，协调 Model 和 View
+class PostController extends GetxController {
   final ImagePicker _imagePicker = ImagePicker();
   
   // 响应式变量
