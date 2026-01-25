@@ -1,81 +1,59 @@
 import 'package:get/get.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../../core/base/base_list_viewmodel.dart';
+import '../../core/result/result.dart';
 import '../models/banner_model.dart';
 import '../models/diamond_model.dart';
 import '../models/article_model.dart';
 import '../models/component_model.dart';
+import '../repositories/recommend_repository.dart';
 import 'discover_viewmodel.dart';
 
-/// 推荐页面 ViewModel（MVVM 架构）
-/// 负责管理推荐页面的状态和业务逻辑
-class RecommendViewModel extends GetxController {
-  final RefreshController refreshController = RefreshController(initialRefresh: false);
+/// 推荐页面 ViewModel（MVVM 架构 - 新架构版本）
+/// 继承 BaseListViewModel，管理文章列表，同时管理其他数据（Banner、金刚区、组件）
+/// 使用 Repository 层获取数据
+class RecommendViewModel extends BaseListViewModel<ArticleModel> {
+  final RecommendRepository _repository = RecommendRepository();
   
-  // 响应式变量
+  // 其他数据（非列表分页数据）
   final _banners = <BannerModel>[].obs;
   final _diamonds = <DiamondModel>[].obs;
-  final _articles = <ArticleModel>[].obs;
   final _components = <ComponentModel>[].obs;
-  final _isLoading = false.obs;
-  final _currentPage = 1.obs;
-  final _hasMore = true.obs;
-  final _isInitialized = false.obs;
   
   // Getters
   List<BannerModel> get banners => _banners;
   List<DiamondModel> get diamonds => _diamonds;
-  List<ArticleModel> get articles => _articles;
   List<ComponentModel> get components => _components;
-  bool get isLoading => _isLoading.value;
-  int get currentPage => _currentPage.value;
-  bool get hasMore => _hasMore.value;
-  bool get isInitialized => _isInitialized.value;
+  // articles 使用基类的 items
+  List<ArticleModel> get articles => items;
   
-  /// 初始化数据
-  Future<void> init() async {
-    if (_isInitialized.value) return;
-    
+  @override
+  Future<void> initialize() async {
     await loadData(isRefresh: true);
-    _isInitialized.value = true;
   }
   
-  /// 下拉刷新
-  Future<void> onRefresh() async {
-    _currentPage.value = 1;
-    _hasMore.value = true;
-    await loadData(isRefresh: true);
-    refreshController.refreshCompleted();
-  }
-  
-  /// 上拉加载更多
-  Future<void> onLoading() async {
-    if (!_hasMore.value) {
-      refreshController.loadNoData();
-      return;
-    }
-    
-    _currentPage.value++;
-    await loadMoreData();
-    
-    if (_hasMore.value) {
-      refreshController.loadComplete();
-    } else {
-      refreshController.loadNoData();
-    }
-  }
-  
-  /// 加载数据（刷新）
+  @override
   Future<void> loadData({bool isRefresh = false}) async {
     if (isRefresh) {
-      _isLoading.value = true;
+      // 并行加载所有数据
+      await Future.wait([
+        _loadBanners(),
+        _loadDiamonds(),
+        _loadComponents(),
+        _loadArticles(isRefresh: true),
+      ]);
+    } else {
+      // 只加载文章
+      await _loadArticles(isRefresh: false);
     }
-    
-    try {
-      // TODO: 从后端获取数据
-      // 模拟数据
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (isRefresh) {
+  }
+  
+  /// 加载Banner
+  Future<void> _loadBanners() async {
+    final result = await _repository.getBanners();
+    result.when(
+      success: (data) => _banners.value = data,
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
         _banners.value = [
           BannerModel(
             id: '1',
@@ -90,82 +68,91 @@ class RecommendViewModel extends GetxController {
             linkUrl: 'https://example.com/link2',
           ),
         ];
-        
+      },
+    );
+  }
+  
+  /// 加载金刚区
+  Future<void> _loadDiamonds() async {
+    final result = await _repository.getDiamonds();
+    result.when(
+      success: (data) => _diamonds.value = data,
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
         _diamonds.value = List.generate(10, (index) => DiamondModel(
           id: 'diamond_$index',
           name: '功能$index',
           iconUrl: 'https://example.com/icon$index.png',
           linkUrl: 'https://example.com/link$index',
         ));
-        
-        // 加载功能组件
-        _components.value = _loadComponents();
-        
-        // 刷新时重置文章列表
-        _articles.value = List.generate(20, (index) => ArticleModel(
-          id: 'article_$index',
-          title: '精彩资讯标题 $index',
-          imageUrl: 'https://example.com/article$index.jpg',
-          authorId: 'author_$index',
-          authorName: '作者$index',
-          authorAvatar: 'https://example.com/avatar$index.jpg',
-          carTag: '车型Tag',
-          likeCount: 100 + index,
-          commentCount: 50 + index,
-          collectCount: 30 + index,
-          isTop: index < 2,
-          isFeatured: index % 3 == 0,
-          publishTime: DateTime.now().subtract(Duration(hours: index)).millisecondsSinceEpoch,
-        ));
-      }
-    } catch (e) {
-      Get.snackbar('错误', '加载数据失败: $e');
-    } finally {
-      _isLoading.value = false;
-    }
+      },
+    );
   }
   
-  /// 加载更多数据
+  /// 加载功能组件
+  Future<void> _loadComponents() async {
+    final result = await _repository.getComponents();
+    result.when(
+      success: (data) => _components.value = data,
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
+        _components.value = _loadMockComponents();
+      },
+    );
+  }
+  
+  /// 加载文章列表
+  Future<void> _loadArticles({bool isRefresh = false}) async {
+    final result = await _repository.getArticles(
+      page: currentPage,
+      pageSize: pageSize,
+    );
+    
+    result.when(
+      success: (data) {
+        if (data.isEmpty && isRefresh) {
+          // 网络返回空数据时使用模拟数据
+          _loadMockArticles(isRefresh: isRefresh);
+        } else {
+          setItems(data, isRefresh: isRefresh);
+        }
+      },
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
+        if (isRefresh) {
+          _loadMockArticles(isRefresh: isRefresh);
+        }
+      },
+    );
+  }
+  
+  @override
   Future<void> loadMoreData() async {
-    try {
-      // TODO: 从后端获取更多数据
-      // 模拟加载更多数据
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // 模拟数据：每页加载10条，最多5页
-      if (_currentPage.value <= 5) {
-        final newArticles = List.generate(10, (index) {
-          final articleIndex = _articles.length + index;
-          return ArticleModel(
-            id: 'article_$articleIndex',
-            title: '精彩资讯标题 $articleIndex',
-            imageUrl: 'https://example.com/article$articleIndex.jpg',
-            authorId: 'author_$articleIndex',
-            authorName: '作者$articleIndex',
-            authorAvatar: 'https://example.com/avatar$articleIndex.jpg',
-            carTag: '车型Tag',
-            likeCount: 100 + articleIndex,
-            commentCount: 50 + articleIndex,
-            collectCount: 30 + articleIndex,
-            isTop: false,
-            isFeatured: articleIndex % 3 == 0,
-            publishTime: DateTime.now().subtract(Duration(hours: articleIndex)).millisecondsSinceEpoch,
-          );
-        });
-        
-        _articles.addAll(newArticles);
-        // 模拟：第5页后没有更多数据
-        _hasMore.value = _currentPage.value < 5;
-      } else {
-        _hasMore.value = false;
-      }
-    } catch (e) {
-      Get.snackbar('错误', '加载更多失败: $e');
-    }
+    await _loadArticles(isRefresh: false);
   }
   
-  /// 加载功能组件（模拟数据，实际应该从后端获取）
-  List<ComponentModel> _loadComponents() {
+  /// 加载模拟文章数据（降级方案）
+  void _loadMockArticles({bool isRefresh = false}) {
+    final articles = List.generate(20, (index) => ArticleModel(
+      id: 'article_$index',
+      title: '精彩资讯标题 $index',
+      imageUrl: 'https://example.com/article$index.jpg',
+      authorId: 'author_$index',
+      authorName: '作者$index',
+      authorAvatar: 'https://example.com/avatar$index.jpg',
+      carTag: '车型Tag',
+      likeCount: 100 + index,
+      commentCount: 50 + index,
+      collectCount: 30 + index,
+      isTop: index < 2,
+      isFeatured: index % 3 == 0,
+      publishTime: DateTime.now().subtract(Duration(hours: index)).millisecondsSinceEpoch,
+    ));
+    setItems(articles, isRefresh: isRefresh);
+  }
+  
+  /// 加载模拟组件数据（降级方案）
+  List<ComponentModel> _loadMockComponents() {
     return [
       // 热门话题
       ComponentModel(
@@ -277,11 +264,5 @@ class RecommendViewModel extends GetxController {
     } catch (e) {
       // DiscoverViewModel 不存在，忽略
     }
-  }
-  
-  @override
-  void onClose() {
-    refreshController.dispose();
-    super.onClose();
   }
 }

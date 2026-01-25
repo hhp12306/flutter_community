@@ -9,7 +9,8 @@ void main() async {
   
   // 初始化i18n
   final i18nViewModel = I18nViewModel();
-  await i18nViewModel.init();
+  // 新架构：直接调用 initialize() 方法（BaseViewModel 会在 onInit 时自动调用，但这里需要提前初始化）
+  await i18nViewModel.initialize();
   
   // 注册全局 ViewModel
   Get.put(i18nViewModel, permanent: true);

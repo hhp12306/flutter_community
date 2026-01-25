@@ -1,24 +1,21 @@
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
+import '../../core/base/base_viewmodel.dart';
 
-/// 视频播放页面 ViewModel（MVVM 架构）
+/// 视频播放页面 ViewModel（MVVM 架构 - 新架构版本）
 /// 负责管理视频播放页面的状态和业务逻辑
-class VideoPlayerViewModel extends GetxController {
+class VideoPlayerViewModel extends BaseViewModel {
   // 响应式变量
   final _videoUrls = <String>[].obs;
   final _currentIndex = 0.obs;
-  final _isInitialized = false.obs;
   final _isPlaying = false.obs;
   final _videoPlayerController = Rx<VideoPlayerController?>(null);
-  final _errorMessage = Rx<String?>(null);
   
   // Getters
   List<String> get videoUrls => _videoUrls;
   int get currentIndex => _currentIndex.value;
-  bool get isInitialized => _isInitialized.value;
   bool get isPlaying => _isPlaying.value;
   VideoPlayerController? get videoPlayerController => _videoPlayerController.value;
-  String? get errorMessage => _errorMessage.value;
   bool get hasMultipleVideos => _videoUrls.length > 1;
   
   /// 初始化视频列表
@@ -51,11 +48,9 @@ class VideoPlayerViewModel extends GetxController {
     // 释放之前的控制器
     await _disposeController();
     
-    _isInitialized.value = false;
     _isPlaying.value = false;
-    _errorMessage.value = null;
     
-    try {
+    await execute(() async {
       // 创建新的视频控制器
       final controller = VideoPlayerController.networkUrl(
         Uri.parse(_videoUrls[index]),
@@ -67,15 +62,11 @@ class VideoPlayerViewModel extends GetxController {
       await controller.initialize();
       
       _videoPlayerController.value = controller;
-      _isInitialized.value = true;
       
       // 自动播放
       await controller.play();
       _isPlaying.value = true;
-    } catch (e) {
-      _errorMessage.value = '视频加载失败: $e';
-      Get.snackbar('错误', _errorMessage.value!);
-    }
+    });
   }
   
   /// 视频状态监听器

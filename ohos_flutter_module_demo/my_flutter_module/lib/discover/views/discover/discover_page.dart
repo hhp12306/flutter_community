@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../viewmodels/discover_viewmodel.dart';
-import 'components/discover_tab_bar.dart';
 import 'components/discover_app_bar.dart';
 import 'pages/recommend_page.dart';
 import 'pages/community_page.dart';
@@ -135,11 +134,10 @@ class _DiscoverPageState extends State<DiscoverPage>
       );
     }
 
-    return Obx(() => Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       appBar: DiscoverAppBar(
-        scrollOffset: _viewModel.scrollOffset,
-        themeStyle: _viewModel.themeStyle,
+        viewModel: _viewModel,
         onSearchTap: () {
           // 跳转搜索页面
           // TODO: 实现搜索页面跳转
@@ -151,7 +149,7 @@ class _DiscoverPageState extends State<DiscoverPage>
             // TODO: 跳转消息中心页面
           }
         },
-        child: _viewModel.visibleTabs.isEmpty
+        child: Obx(() => _viewModel.visibleTabs.isEmpty
             ? const SizedBox.shrink()
             : DiscoverTabBar(
                 tabs: _viewModel.visibleTabs,
@@ -164,15 +162,17 @@ class _DiscoverPageState extends State<DiscoverPage>
                     curve: Curves.easeInOut,
                   );
                 },
-              ),
+              )),
       ),
       body: _viewModel.visibleTabs.isEmpty || _pageController == null
           ? const Center(child: CircularProgressIndicator())
           : NotificationListener<ScrollNotification>(
               onNotification: (notification) {
-                // 监听滚动，更新滚动偏移量
+                // 监听滚动，更新滚动偏移量（节流处理，避免过于频繁更新）
                 if (notification is ScrollUpdateNotification) {
-                  _viewModel.updateScrollOffset(notification.metrics.pixels);
+                  final pixels = notification.metrics.pixels;
+                  // 使用 ViewModel 的节流逻辑
+                  _viewModel.updateScrollOffset(pixels);
                 }
                 return false;
               },
@@ -187,7 +187,7 @@ class _DiscoverPageState extends State<DiscoverPage>
                 },
               ),
             ),
-    ));
+    );
   }
 }
 

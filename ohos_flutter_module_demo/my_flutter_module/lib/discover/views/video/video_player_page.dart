@@ -52,17 +52,27 @@ class VideoPlayerPage extends StatelessWidget {
 
   /// 构建视频播放器
   Widget _buildVideoPlayer(VideoPlayerViewModel viewModel, bool isActive) {
-    if (!isActive || !viewModel.isInitialized || viewModel.videoPlayerController == null) {
+    if (!isActive || viewModel.isLoading || viewModel.videoPlayerController == null) {
       return const Center(
         child: CircularProgressIndicator(color: Colors.white),
       );
     }
 
-    if (viewModel.errorMessage != null) {
+    if (viewModel.isError) {
       return Center(
-        child: Text(
-          viewModel.errorMessage!,
-          style: const TextStyle(color: Colors.white),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              viewModel.error?.message ?? '视频加载失败',
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => viewModel.initVideos(videoUrl, videoList),
+              child: const Text('重试'),
+            ),
+          ],
         ),
       );
     }

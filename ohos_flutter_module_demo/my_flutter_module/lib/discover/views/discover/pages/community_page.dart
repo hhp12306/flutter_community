@@ -30,8 +30,7 @@ class _CommunityPageState extends State<CommunityPage>
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
     _viewModel = Get.put(CommunityViewModel());
-    // 初始化数据
-    _viewModel.init();
+    // BaseViewModel 会在 onInit 时自动调用 initialize()
   }
 
   @override

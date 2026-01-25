@@ -1,25 +1,24 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../core/base/base_viewmodel.dart';
 
-/// 发帖页面 ViewModel（MVVM 架构）
+/// 发帖页面 ViewModel（MVVM 架构 - 新架构版本）
 /// 负责管理发帖页面的状态和业务逻辑
-class PostViewModel extends GetxController {
+class PostViewModel extends BaseViewModel {
   final ImagePicker _imagePicker = ImagePicker();
   
   // 响应式变量
   final _textContent = ''.obs;
   final _selectedImages = <File>[].obs;
   final _selectedVideo = Rx<File?>(null);
-  final _isPublishing = false.obs;
-  final _isSavingDraft = false.obs;
   
   // Getters
   String get textContent => _textContent.value;
   List<File> get selectedImages => _selectedImages;
   File? get selectedVideo => _selectedVideo.value;
-  bool get isPublishing => _isPublishing.value;
-  bool get isSavingDraft => _isSavingDraft.value;
+  bool get isPublishing => isLoading; // 使用基类的 isLoading
+  bool get isSavingDraft => isLoading; // 使用基类的 isLoading
   bool get hasContent => _textContent.value.trim().isNotEmpty || 
                         _selectedImages.isNotEmpty || 
                         _selectedVideo.value != null;
@@ -31,20 +30,17 @@ class PostViewModel extends GetxController {
   
   /// 选择图片（从相册）
   Future<void> pickImages() async {
-    try {
+    await execute(() async {
       final List<XFile> images = await _imagePicker.pickMultiImage();
       if (images.isNotEmpty) {
         _selectedImages.addAll(images.map((xFile) => File(xFile.path)));
       }
-    } catch (e) {
-      // 处理错误
-      Get.snackbar('错误', '选择图片失败: $e');
-    }
+    }, showLoading: false);
   }
   
   /// 选择视频（从相册）
   Future<void> pickVideo() async {
-    try {
+    await execute(() async {
       final XFile? video = await _imagePicker.pickVideo(
         source: ImageSource.gallery,
       );
@@ -53,23 +49,19 @@ class PostViewModel extends GetxController {
         // 选择视频时清空图片
         _selectedImages.clear();
       }
-    } catch (e) {
-      Get.snackbar('错误', '选择视频失败: $e');
-    }
+    }, showLoading: false);
   }
   
   /// 拍照
   Future<void> takePhoto() async {
-    try {
+    await execute(() async {
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.camera,
       );
       if (image != null && image.path.isNotEmpty) {
         _selectedImages.add(File(image.path));
       }
-    } catch (e) {
-      Get.snackbar('错误', '拍照失败: $e');
-    }
+    }, showLoading: false);
   }
   
   /// 删除图片
@@ -91,18 +83,11 @@ class PostViewModel extends GetxController {
       return;
     }
     
-    _isSavingDraft.value = true;
-    
-    try {
+    await execute(() async {
       // TODO: 保存草稿到本地存储
       await Future.delayed(const Duration(milliseconds: 500));
-      
       Get.snackbar('成功', '草稿已保存', snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar('错误', '保存草稿失败: $e');
-    } finally {
-      _isSavingDraft.value = false;
-    }
+    });
   }
   
   /// 发布帖子
@@ -112,9 +97,7 @@ class PostViewModel extends GetxController {
       return;
     }
     
-    _isPublishing.value = true;
-    
-    try {
+    await execute(() async {
       // TODO: 调用发布接口
       await Future.delayed(const Duration(seconds: 2));
       
@@ -124,11 +107,7 @@ class PostViewModel extends GetxController {
       
       // 清空内容
       clearContent();
-    } catch (e) {
-      Get.snackbar('错误', '发布失败: $e');
-    } finally {
-      _isPublishing.value = false;
-    }
+    });
   }
   
   /// 清空内容

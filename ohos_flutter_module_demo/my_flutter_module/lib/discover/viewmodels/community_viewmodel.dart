@@ -1,9 +1,16 @@
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import '../../core/base/base_viewmodel.dart';
+import '../../core/result/result.dart';
+import '../repositories/community_repository.dart';
 
-/// 社区页面 ViewModel（MVVM 架构）
+/// 社区页面 ViewModel（MVVM 架构 - 新架构版本）
 /// 负责管理社区页面的状态和业务逻辑
-class CommunityViewModel extends GetxController {
+/// 注意：有3个独立的Tab列表，每个都有自己的分页状态
+/// 使用 Repository 层获取数据
+class CommunityViewModel extends BaseViewModel {
+  final CommunityRepository _repository = CommunityRepository();
+  
   // 为每个Tab创建独立的刷新控制器
   final RefreshController featuredRefreshController = RefreshController(initialRefresh: false);
   final RefreshController latestRefreshController = RefreshController(initialRefresh: false);
@@ -21,7 +28,6 @@ class CommunityViewModel extends GetxController {
   final _featuredHasMore = true.obs;
   final _latestHasMore = true.obs;
   final _followingHasMore = true.obs;
-  final _isInitialized = false.obs;
   
   // Getters
   List<Map<String, dynamic>> get featuredPosts => _featuredPosts;
@@ -33,14 +39,10 @@ class CommunityViewModel extends GetxController {
   bool get featuredHasMore => _featuredHasMore.value;
   bool get latestHasMore => _latestHasMore.value;
   bool get followingHasMore => _followingHasMore.value;
-  bool get isInitialized => _isInitialized.value;
   
-  /// 初始化数据
-  Future<void> init() async {
-    if (_isInitialized.value) return;
-    
+  @override
+  Future<void> initialize() async {
     await loadInitialData();
-    _isInitialized.value = true;
   }
   
   /// 加载初始数据
@@ -123,140 +125,107 @@ class CommunityViewModel extends GetxController {
   
   /// 加载精选数据
   Future<void> loadFeaturedData({bool isRefresh = false}) async {
-    try {
-      // TODO: 从后端获取数据
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (isRefresh) {
-        _featuredPosts.value = List.generate(10, (index) => {
-          'id': 'featured_$index',
-          'title': '精选帖子 $index',
-          'author': '发布人$index',
-          'authorId': 'user_$index',
-          'carTag': '车型Tag',
-          'time': '${index}小时前',
-          'likeCount': 100 + index,
-          'commentCount': 50 + index,
-          'isFollowed': false,
-        });
-      } else {
-        // 加载更多
-        if (_featuredPage.value <= 5) {
-          final newPosts = List.generate(10, (index) {
-            final postIndex = _featuredPosts.length + index;
-            return {
-              'id': 'featured_$postIndex',
-              'title': '精选帖子 $postIndex',
-              'author': '发布人$postIndex',
-              'authorId': 'user_$postIndex',
-              'carTag': '车型Tag',
-              'time': '${postIndex}小时前',
-              'likeCount': 100 + postIndex,
-              'commentCount': 50 + postIndex,
-              'isFollowed': false,
-            };
-          });
-          _featuredPosts.addAll(newPosts);
-          _featuredHasMore.value = _featuredPage.value < 5;
+    final result = await _repository.getFeaturedPosts(
+      page: _featuredPage.value,
+      pageSize: 10,
+    );
+    
+    result.when(
+      success: (data) {
+        if (isRefresh) {
+          _featuredPosts.value = data.isEmpty ? _generateMockPosts('featured', 10) : data;
         } else {
-          _featuredHasMore.value = false;
+          if (data.length >= 10) {
+            _featuredPosts.addAll(data);
+            _featuredHasMore.value = true;
+          } else {
+            _featuredPosts.addAll(data);
+            _featuredHasMore.value = false;
+          }
         }
-      }
-    } catch (e) {
-      Get.snackbar('错误', '加载精选数据失败: $e');
-    }
+      },
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
+        if (isRefresh) {
+          _featuredPosts.value = _generateMockPosts('featured', 10);
+        }
+      },
+    );
+  }
+  
+  /// 生成模拟帖子数据
+  List<Map<String, dynamic>> _generateMockPosts(String type, int count) {
+    return List.generate(count, (index) => {
+      'id': '${type}_$index',
+      'title': '${type == 'featured' ? '精选' : type == 'latest' ? '最新' : '关注'}帖子 $index',
+      'author': '发布人$index',
+      'authorId': 'user_$index',
+      'carTag': '车型Tag',
+      'time': type == 'latest' ? '${index}分钟前' : '${index}小时前',
+      'likeCount': 100 + index,
+      'commentCount': 50 + index,
+      'isFollowed': type == 'following',
+    });
   }
   
   /// 加载最新数据
   Future<void> loadLatestData({bool isRefresh = false}) async {
-    try {
-      // TODO: 从后端获取数据
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (isRefresh) {
-        _latestPosts.value = List.generate(10, (index) => {
-          'id': 'latest_$index',
-          'title': '最新帖子 $index',
-          'author': '发布人$index',
-          'authorId': 'user_$index',
-          'carTag': '车型Tag',
-          'time': '${index}分钟前',
-          'likeCount': 80 + index,
-          'commentCount': 40 + index,
-          'isFollowed': false,
-        });
-      } else {
-        // 加载更多
-        if (_latestPage.value <= 5) {
-          final newPosts = List.generate(10, (index) {
-            final postIndex = _latestPosts.length + index;
-            return {
-              'id': 'latest_$postIndex',
-              'title': '最新帖子 $postIndex',
-              'author': '发布人$postIndex',
-              'authorId': 'user_$postIndex',
-              'carTag': '车型Tag',
-              'time': '${postIndex}分钟前',
-              'likeCount': 80 + postIndex,
-              'commentCount': 40 + postIndex,
-              'isFollowed': false,
-            };
-          });
-          _latestPosts.addAll(newPosts);
-          _latestHasMore.value = _latestPage.value < 5;
+    final result = await _repository.getLatestPosts(
+      page: _latestPage.value,
+      pageSize: 10,
+    );
+    
+    result.when(
+      success: (data) {
+        if (isRefresh) {
+          _latestPosts.value = data.isEmpty ? _generateMockPosts('latest', 10) : data;
         } else {
-          _latestHasMore.value = false;
+          if (data.length >= 10) {
+            _latestPosts.addAll(data);
+            _latestHasMore.value = true;
+          } else {
+            _latestPosts.addAll(data);
+            _latestHasMore.value = false;
+          }
         }
-      }
-    } catch (e) {
-      Get.snackbar('错误', '加载最新数据失败: $e');
-    }
+      },
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
+        if (isRefresh) {
+          _latestPosts.value = _generateMockPosts('latest', 10);
+        }
+      },
+    );
   }
   
   /// 加载关注数据
   Future<void> loadFollowingData({bool isRefresh = false}) async {
-    try {
-      // TODO: 从后端获取数据
-      await Future.delayed(const Duration(seconds: 1));
-      
-      if (isRefresh) {
-        _followingPosts.value = List.generate(10, (index) => {
-          'id': 'following_$index',
-          'title': '关注帖子 $index',
-          'author': '关注的人$index',
-          'authorId': 'user_$index',
-          'carTag': '车型Tag',
-          'time': '${index}小时前',
-          'likeCount': 120 + index,
-          'commentCount': 60 + index,
-          'isFollowed': true,
-        });
-      } else {
-        // 加载更多
-        if (_followingPage.value <= 5) {
-          final newPosts = List.generate(10, (index) {
-            final postIndex = _followingPosts.length + index;
-            return {
-              'id': 'following_$postIndex',
-              'title': '关注帖子 $postIndex',
-              'author': '关注的人$postIndex',
-              'authorId': 'user_$postIndex',
-              'carTag': '车型Tag',
-              'time': '${postIndex}小时前',
-              'likeCount': 120 + postIndex,
-              'commentCount': 60 + postIndex,
-              'isFollowed': true,
-            };
-          });
-          _followingPosts.addAll(newPosts);
-          _followingHasMore.value = _followingPage.value < 5;
+    final result = await _repository.getFollowingPosts(
+      page: _followingPage.value,
+      pageSize: 10,
+    );
+    
+    result.when(
+      success: (data) {
+        if (isRefresh) {
+          _followingPosts.value = data.isEmpty ? _generateMockPosts('following', 10) : data;
         } else {
-          _followingHasMore.value = false;
+          if (data.length >= 10) {
+            _followingPosts.addAll(data);
+            _followingHasMore.value = true;
+          } else {
+            _followingPosts.addAll(data);
+            _followingHasMore.value = false;
+          }
         }
-      }
-    } catch (e) {
-      Get.snackbar('错误', '加载关注数据失败: $e');
-    }
+      },
+      failure: (message, code, error) {
+        // 网络失败时使用模拟数据
+        if (isRefresh) {
+          _followingPosts.value = _generateMockPosts('following', 10);
+        }
+      },
+    );
   }
   
   /// 更新关注状态

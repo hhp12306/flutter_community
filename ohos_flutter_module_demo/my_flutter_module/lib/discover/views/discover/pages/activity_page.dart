@@ -29,8 +29,7 @@ class _ActivityPageState extends State<ActivityPage>
     super.initState();
     // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
     _viewModel = Get.put(ActivityViewModel());
-    // 初始化数据
-    _viewModel.init();
+    // BaseViewModel 会在 onInit 时自动调用 initialize()
   }
 
   @override
@@ -45,7 +44,7 @@ class _ActivityPageState extends State<ActivityPage>
     
     return Obx(() => Scaffold(
       backgroundColor: Colors.white,
-      body: _viewModel.isLoading
+      body: _viewModel.isLoading && _viewModel.items.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
@@ -122,21 +121,45 @@ class _ActivityPageState extends State<ActivityPage>
                       canLoadingText: '释放加载更多',
                       textStyle: const TextStyle(color: Colors.black54),
                     ),
-                    child: _viewModel.activities.isEmpty
-                        ? const Center(
-                            child: Text(
-                              '暂无活动',
-                              style: TextStyle(
-                                fontSize: 14.0,
-                                color: Colors.grey,
-                              ),
-                            ),
+                    child: _viewModel.items.isEmpty
+                        ? Center(
+                            child: _viewModel.isError
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.error_outline,
+                                        size: 48,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        _viewModel.error?.message ?? '加载失败',
+                                        style: const TextStyle(
+                                          fontSize: 14.0,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      ElevatedButton(
+                                        onPressed: () => _viewModel.onRefresh(),
+                                        child: const Text('重试'),
+                                      ),
+                                    ],
+                                  )
+                                : const Text(
+                                    '暂无活动',
+                                    style: TextStyle(
+                                      fontSize: 14.0,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.all(0),
-                            itemCount: _viewModel.activities.length,
+                            itemCount: _viewModel.items.length,
                             itemBuilder: (context, index) {
-                              return _buildActivityCard(_viewModel.activities[index]);
+                              return _buildActivityCard(_viewModel.items[index]);
                             },
                           ),
                   ),

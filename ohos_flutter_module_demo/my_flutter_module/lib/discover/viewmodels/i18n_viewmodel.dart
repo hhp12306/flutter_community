@@ -1,17 +1,17 @@
 import 'package:get/get.dart';
+import '../../core/base/base_viewmodel.dart';
 import '../services/i18n_service.dart';
 
-/// 国际化 ViewModel（MVVM 架构）
+/// 国际化 ViewModel（MVVM 架构 - 新架构版本）
 /// 负责管理国际化相关的状态和逻辑
-class I18nViewModel extends GetxController {
+class I18nViewModel extends BaseViewModel {
   final I18nService _i18nService = I18nService();
   
   String get currentLanguage => _i18nService.currentLanguage;
   
-  /// 初始化
-  Future<void> init() async {
+  @override
+  Future<void> initialize() async {
     await _i18nService.init();
-    update(); // GetX 的更新方法
   }
   
   /// 获取翻译文本
@@ -21,8 +21,9 @@ class I18nViewModel extends GetxController {
   
   /// 切换语言
   Future<void> switchLanguage(String languageCode) async {
-    await _i18nService.switchLanguage(languageCode);
-    update(); // GetX 的更新方法
+    await execute(() async {
+      await _i18nService.switchLanguage(languageCode);
+    }, showLoading: false);
   }
   
   /// 获取支持的语言列表

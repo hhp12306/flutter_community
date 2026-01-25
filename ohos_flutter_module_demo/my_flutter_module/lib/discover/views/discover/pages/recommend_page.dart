@@ -29,8 +29,7 @@ class _RecommendPageState extends State<RecommendPage>
     super.initState();
     // 使用 Get.put 创建 ViewModel，页面销毁时自动清理
     _viewModel = Get.put(RecommendViewModel());
-    // 初始化数据
-    _viewModel.init();
+    // BaseViewModel 会在 onInit 时自动调用 initialize()
   }
 
   @override
@@ -45,7 +44,7 @@ class _RecommendPageState extends State<RecommendPage>
     super.build(context); // 必须调用，用于保持页面状态
     
     return Obx(() {
-      if (_viewModel.isLoading && _viewModel.articles.isEmpty) {
+      if (_viewModel.isLoading && _viewModel.items.isEmpty) {
         return const Center(child: CircularProgressIndicator());
       }
 
@@ -112,8 +111,8 @@ class _RecommendPageState extends State<RecommendPage>
             ..._buildComponentSlivers(),
             
             // 精彩资讯（瀑布流）
-            if (_viewModel.articles.isNotEmpty)
-              ArticleList(articles: _viewModel.articles),
+            if (_viewModel.items.isNotEmpty)
+              ArticleList(articles: _viewModel.items),
           ],
         ),
       );
