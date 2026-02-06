@@ -1,0 +1,2 @@
+# 静态图片放置目录，可放 png、jpg、webp、svg 等
+# 使用方式：Image.asset('assets/images/xxx.png') 或 UniversalAsset('assets/images/xxx.png')
