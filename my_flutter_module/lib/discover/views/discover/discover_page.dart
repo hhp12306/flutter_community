@@ -165,11 +165,7 @@ class _DiscoverPageBodyState extends State<_DiscoverPageBody> {
                 controller: _tabController,
                 themeStyle: widget.viewModel.themeStyle,
                 onTabTap: (index) {
-                  _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
+                  _pageController.jumpToPage(index);
                 },
               )),
       ),
