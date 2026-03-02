@@ -126,7 +126,10 @@ class _DiscoverPageBodyState extends State<_DiscoverPageBody> {
       case 'smart-drive':
         return const SmartDrivePage();
       case 'activity':
-        return const ActivityPage();
+        final brandArg = Get.arguments is Map
+            ? (Get.arguments as Map)['brand']?.toString()
+            : null;
+        return ActivityPage(brand: Get.parameters['brand'] ?? brandArg);
       case 'news':
         return const NewsPage();
       case 'circle':

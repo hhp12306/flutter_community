@@ -8,23 +8,54 @@ import '../../../models/city_model.dart';
 import '../../../utils/time_util.dart';
 import '../../common/city_selector_page.dart';
 import '../../common/di_image_widget.dart';
+import 'activity/activity_brand2_page.dart';
+import 'activity/activity_brand3_page.dart';
+import 'activity/activity_brand4_page.dart';
+import 'activity/activity_brand5_page.dart';
 
-/// 活动卡片封面无数据时的默认图（需放在 assets/images/ 下）
-const String _activityCoverAsset = 'assets/images/nature-landscape-with-hand-holding-frame.jpg';
-const String _activityCoverUrl = 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png';
-const String _activityCoverUrl2 = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png';
+/// 根据原生传入的 brand 参数（1-5）展示对应品牌活动页，无参或无效时默认品牌1
+class ActivityPage extends StatelessWidget {
+  const ActivityPage({Key? key, this.brand}) : super(key: key);
 
+  /// 品牌标识，由原生通过路由参数传入，取值 "1"～"5"
+  final String? brand;
 
-/// 活动页面（MVVM 架构）
-/// 支持城市定位，切换跳转城市选择页
-class ActivityPage extends StatefulWidget {
-  const ActivityPage({Key? key}) : super(key: key);
+  static int _parseBrandIndex(String? value) {
+    if (value == null || value.isEmpty) return 1;
+    final n = int.tryParse(value.trim());
+    if (n == null || n < 1 || n > 5) return 1;
+    return n;
+  }
 
   @override
-  State<ActivityPage> createState() => _ActivityPageState();
+  Widget build(BuildContext context) {
+    // final index = _parseBrandIndex(brand);
+    final index = 2;
+    switch (index) {
+      case 2:
+        return const ActivityBrand2Page();
+      case 3:
+        return const ActivityBrand3Page();
+      case 4:
+        return const ActivityBrand4Page();
+      case 5:
+        return const ActivityBrand5Page();
+      case 1:
+      default:
+        return const _ActivityPageDefault();
+    }
+  }
 }
 
-class _ActivityPageState extends State<ActivityPage>
+/// 品牌1 / 默认活动页（MVVM 架构，原活动列表）
+class _ActivityPageDefault extends StatefulWidget {
+  const _ActivityPageDefault({Key? key}) : super(key: key);
+
+  @override
+  State<_ActivityPageDefault> createState() => _ActivityPageDefaultState();
+}
+
+class _ActivityPageDefaultState extends State<_ActivityPageDefault>
     with AutomaticKeepAliveClientMixin {
   late final ActivityViewModel _viewModel;
 
