@@ -6,6 +6,7 @@ import '../../../../viewmodels/activity_brand2_viewmodel.dart';
 import '../../../../models/activity_model.dart';
 import '../../../common/di_image_widget.dart';
 import '../../../../utils/time_util.dart';
+import '../../../common/app_loading_indicator.dart';
 
 /// 品牌2活动页：先加载当前定位城市活动，完成后显示「更多精彩活动」并加载该列表，无更多时显示「没有更多了」
 class ActivityBrand2Page extends StatefulWidget {
@@ -35,7 +36,7 @@ class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
         backgroundColor: Colors.grey.shade100,
         body: Obx(() {
           if (_vm.isLoading && !_vm.cityLoaded) {
-            return const Center(child: CircularProgressIndicator());
+            return const AppLoadingIndicator();
           }
           return SmartRefresher(
               controller: _vm.refreshController,
@@ -58,11 +59,7 @@ class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
                   if (mode == LoadStatus.loading) {
                     return const Padding(
                       padding: EdgeInsets.all(16),
-                      child: Center(child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )),
+                      child: AppLoadingIndicator(size: 24, fit: BoxFit.cover),
                     );
                   }
                   return const SizedBox.shrink();
@@ -87,7 +84,7 @@ class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
       child: _vm.cityLoading
           ? const Padding(
               padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
+              child: AppLoadingIndicator(size: 48, fit: BoxFit.cover),
             )
           : Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -139,7 +136,7 @@ class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
       return const SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
+          child: AppLoadingIndicator(size: 48, fit: BoxFit.cover),
         ),
       );
     }

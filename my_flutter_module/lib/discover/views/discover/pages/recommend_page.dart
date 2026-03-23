@@ -8,6 +8,7 @@ import '../../discover/components/banner_carousel.dart';
 import '../../discover/components/diamond_grid.dart';
 import '../../discover/components/article_list.dart';
 import '../../discover/components/component_factory.dart';
+import '../../common/app_loading_indicator.dart';
 
 /// 推荐页面（MVVM 架构）
 /// 包含：Banner轮播图、金刚区、功能组件区、精彩资讯（瀑布流）
@@ -46,7 +47,7 @@ class _RecommendPageState extends State<RecommendPage>
     
     return Obx(() {
       if (_viewModel.isLoading && _viewModel.items.isEmpty) {
-        return const Center(child: CircularProgressIndicator());
+        return const AppLoadingIndicator();
       }
 
       return SmartRefresher(

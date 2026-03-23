@@ -13,6 +13,7 @@ import 'pages/live_page.dart';
 import 'pages/reputation_page.dart';
 import '../../models/tab_model.dart';
 import '../../utils/route_guard.dart';
+import '../common/app_loading_indicator.dart';
 
 /// 发现页面（主页面）
 /// 状态由 GetX ViewModel 驱动，严格 MVVM：View 仅通过 Obx 观察 ViewModel
@@ -46,7 +47,7 @@ class _DiscoverPageState extends State<DiscoverPage>
     return Obx(() {
       if (_viewModel.visibleTabs.isEmpty) {
         return const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
+          body: AppLoadingIndicator(),
         );
       }
       return _DiscoverPageBody(
