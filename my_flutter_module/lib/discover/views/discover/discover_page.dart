@@ -4,7 +4,6 @@ import '../../viewmodels/discover_viewmodel.dart';
 import 'components/discover_app_bar.dart';
 import 'pages/recommend_page.dart';
 import 'pages/community_page.dart';
-import 'pages/club_page.dart';
 import 'pages/smart_drive_page.dart';
 import 'pages/activity_page.dart';
 import 'pages/news_page.dart';
@@ -107,6 +106,19 @@ class _DiscoverPageBodyState extends State<_DiscoverPageBody> {
         );
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyActivityTabIfNeeded(widget.viewModel.currentIndex);
+    });
+  }
+
+  void _notifyActivityTabIfNeeded(int index) {
+    if (index < 0 || index >= widget.viewModel.visibleTabs.length) return;
+    final id = widget.viewModel.visibleTabs[index].id;
+    if (id == 'activity') {
+      debugPrint('[DiscoverPage] tab index=$index id=activity -> notifyActivityTabSelected');
+      widget.viewModel.notifyActivityTabSelected();
+    }
   }
 
   @override
@@ -149,6 +161,7 @@ class _DiscoverPageBodyState extends State<_DiscoverPageBody> {
       _tabController.animateTo(index);
     }
     widget.viewModel.setCurrentIndex(index);
+    _notifyActivityTabIfNeeded(index);
   }
 
   @override

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../core/base/base_viewmodel.dart';
 import '../../core/result/result.dart';
@@ -22,6 +25,19 @@ class DiscoverViewModel extends BaseViewModel {
   int get currentIndex => _currentIndex.value;
   double get scrollOffset => _scrollOffset.value;
   int? get themeStyle => _themeStyle.value;
+
+  /// 切到「活动」Tab 时递增，活动页 `ever` 监听后触发定位等逻辑
+  final RxInt activityLocationTick = 0.obs;
+
+  void notifyActivityTabSelected() {
+    // 延后到微任务，避免 PageView 先触发 onPageChanged 再构建活动子页时，
+    // ever 尚未注册而错过本次 tick 递增。
+    scheduleMicrotask(() {
+      final next = activityLocationTick.value + 1;
+      activityLocationTick.value = next;
+      print('=======>>>> [Discover] notifyActivityTabSelected -> activityLocationTick=$next');
+    });
+  }
 
   /// 加载Tab配置（供外部调用，不自动初始化）
   Future<void> loadTabs() async {

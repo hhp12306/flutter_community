@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../core/base/base_viewmodel.dart';
 import '../../core/base/base_list_viewmodel.dart';
@@ -28,17 +29,23 @@ class ActivityViewModel extends BaseListViewModel<ActivityModel> {
 
   /// 活动页显示在屏幕上时由 Discover 调用：请求定位（弹窗）后按定位城市再拉一遍数据，只弹一次
   Future<void> onPageVisible() async {
-    print('获取定位');
-    if (_locationChecked) return;
+    debugPrint('[ActivityViewModel] onPageVisible called, _locationChecked=$_locationChecked');
+    if (_locationChecked) {
+      debugPrint('[ActivityViewModel] onPageVisible skip (already checked)');
+      return;
+    }
     _locationChecked = true;
     setStatus(ViewModelStatus.loading);
+    debugPrint('[ActivityViewModel] requestLocation=true -> loadCurrentCity');
     await loadCurrentCity(requestLocation: true);
     await loadData(isRefresh: true);
     setStatus(ViewModelStatus.success);
+    debugPrint('[ActivityViewModel] onPageVisible done');
   }
 
   /// 加载当前城市
   Future<void> loadCurrentCity({bool requestLocation = true}) async {
+    debugPrint('[ActivityViewModel] loadCurrentCity requestLocation=$requestLocation');
     final result = await _repository.getCurrentCity(requestLocation: requestLocation);
     
     result.when(

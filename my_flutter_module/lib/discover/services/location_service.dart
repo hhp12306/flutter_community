@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/city_model.dart';
@@ -11,30 +12,40 @@ class LocationService {
   /// 返回定位信息，如果定位失败返回null
   Future<LocationModel?> getCurrentLocation() async {
     try {
+      debugPrint('[LocationService] getCurrentLocation start');
       // 检查定位权限
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
+        debugPrint('[LocationService] location service disabled');
         // 定位服务未启用
         return null;
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
+      debugPrint('[LocationService] checkPermission -> $permission');
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
+        debugPrint('[LocationService] requestPermission -> $permission');
         if (permission == LocationPermission.denied) {
+          debugPrint('[LocationService] permission denied');
           // 权限被拒绝
           return null;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
+        debugPrint('[LocationService] permission deniedForever');
         // 权限被永久拒绝
         return null;
       }
 
       // 获取当前位置
+      debugPrint('[LocationService] getCurrentPosition ...');
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
+      );
+      debugPrint(
+        '[LocationService] getCurrentPosition ok lat=${position.latitude} lng=${position.longitude}',
       );
 
       // TODO: 根据经纬度逆地理编码获取城市名称
@@ -45,7 +56,8 @@ class LocationService {
         latitude: position.latitude,
         longitude: position.longitude,
       );
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[LocationService] getCurrentLocation error: $e\n$st');
       // 定位失败
       return null;
     }

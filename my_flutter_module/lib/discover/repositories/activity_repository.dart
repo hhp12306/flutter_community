@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../core/repository/base_repository.dart';
 import '../../core/result/result.dart';
 import '../models/activity_model.dart';
@@ -30,11 +32,16 @@ class ActivityRepository extends BaseRepository {
   /// [requestLocation] 为 true 时，无保存城市会请求定位（可能触发系统权限弹窗）；为 false 时仅用已保存或默认城市
   Future<Result<CityModel?>> getCurrentCity({bool requestLocation = true}) async {
     try {
+      debugPrint('[ActivityRepository] getCurrentCity requestLocation=$requestLocation');
       final savedCity = await _locationService.getSavedCity();
       if (savedCity != null) {
+        debugPrint(
+          '[ActivityRepository] use savedCity id=${savedCity.id} name=${savedCity.name} (skip GPS)',
+        );
         return Success(savedCity);
       }
       if (requestLocation) {
+        debugPrint('[ActivityRepository] no saved city -> getCurrentLocation');
         final location = await _locationService.getCurrentLocation();
         if (location != null) {
           final city = await _locationService.getCityByLocation(location);
@@ -43,6 +50,7 @@ class ActivityRepository extends BaseRepository {
             return Success(city);
           }
         }
+        debugPrint('[ActivityRepository] GPS path failed -> getLocationCity fallback');
       }
       final locationCity = await _locationService.getLocationCity();
       return Success(locationCity);

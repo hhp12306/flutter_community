@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import '../../../viewmodels/activity_viewmodel.dart';
+import '../../../viewmodels/discover_viewmodel.dart';
 import '../../../models/activity_model.dart';
 import '../../../models/city_model.dart';
 import '../../../utils/time_util.dart';
@@ -58,6 +58,7 @@ class _ActivityPageDefault extends StatefulWidget {
 class _ActivityPageDefaultState extends State<_ActivityPageDefault>
     with AutomaticKeepAliveClientMixin {
   late final ActivityViewModel _viewModel;
+  Worker? _activityTabWorker;
 
   /// 为 true 时卡片封面使用 _activityCoverUrl，否则使用 _activityCoverAsset
   bool _useCoverUrl = false;
@@ -70,12 +71,32 @@ class _ActivityPageDefaultState extends State<_ActivityPageDefault>
   void initState() {
     super.initState();
     _viewModel = Get.put(ActivityViewModel());
-    // 预加载时 initialize() 会用默认/已保存城市拉数据；真正显示时由 Discover 的 onPageChanged 触发定位弹窗并重拉
+    try {
+      final discover = Get.find<DiscoverViewModel>(tag: 'discover');
+      debugPrint('[Activity/default] bind ever(activityLocationTick)');
+      _activityTabWorker = ever<int>(discover.activityLocationTick, (v) {
+        debugPrint('[Activity/default] activityLocationTick=$v -> onPageVisible');
+        _viewModel.onPageVisible();
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final i = discover.currentIndex;
+        final tabs = discover.visibleTabs;
+        if (i >= 0 && i < tabs.length && tabs[i].id == 'activity') {
+          debugPrint(
+            '[Activity/default] postFrame: currentIndex=$i is activity -> onPageVisible (sync)',
+          );
+          _viewModel.onPageVisible();
+        }
+      });
+    } catch (e, st) {
+      debugPrint('[Activity/default] DiscoverViewModel not found: $e\n$st');
+    }
   }
 
   @override
   void dispose() {
-    // Get.put 创建的 ViewModel 会在页面销毁时自动清理
+    _activityTabWorker?.dispose();
     super.dispose();
   }
 
@@ -83,14 +104,7 @@ class _ActivityPageDefaultState extends State<_ActivityPageDefault>
   Widget build(BuildContext context) {
     super.build(context); // 必须调用，用于保持页面状态
     
-    return VisibilityDetector(
-      key: const Key('activity_page_visibility'),
-      onVisibilityChanged: (info) {
-        if (info.visibleFraction >= 0.9) {
-          _viewModel.onPageVisible();
-        }
-      },
-      child: Obx(() => Scaffold(
+    return Obx(() => Scaffold(
       backgroundColor: Colors.white,
       body: _viewModel.isLoading && _viewModel.items.isEmpty
           ? const Center(child: CircularProgressIndicator())
@@ -230,8 +244,7 @@ class _ActivityPageDefaultState extends State<_ActivityPageDefault>
                 ),
               ],
             ),
-    )),
-    );
+    ));
   }
 
   /// 构建活动卡片

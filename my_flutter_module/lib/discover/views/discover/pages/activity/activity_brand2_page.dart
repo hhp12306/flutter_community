@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import '../../../../viewmodels/activity_brand2_viewmodel.dart';
+import '../../../../viewmodels/discover_viewmodel.dart';
 import '../../../../models/activity_model.dart';
 import '../../../common/di_image_widget.dart';
 import '../../../../utils/time_util.dart';
@@ -18,21 +18,44 @@ class ActivityBrand2Page extends StatefulWidget {
 
 class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
   late final ActivityBrand2ViewModel _vm;
+  Worker? _activityTabWorker;
 
   @override
   void initState() {
     super.initState();
     _vm = Get.put(ActivityBrand2ViewModel(), tag: 'activity_brand2');
+    try {
+      final discover = Get.find<DiscoverViewModel>(tag: 'discover');
+      debugPrint('[Activity/brand2] bind ever(activityLocationTick)');
+      _activityTabWorker = ever<int>(discover.activityLocationTick, (v) {
+        debugPrint('[Activity/brand2] activityLocationTick=$v -> onPageVisible');
+        _vm.onPageVisible();
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final i = discover.currentIndex;
+        final tabs = discover.visibleTabs;
+        if (i >= 0 && i < tabs.length && tabs[i].id == 'activity') {
+          debugPrint(
+            '[Activity/brand2] postFrame: currentIndex=$i is activity -> onPageVisible (sync)',
+          );
+          _vm.onPageVisible();
+        }
+      });
+    } catch (e, st) {
+      debugPrint('[Activity/brand2] DiscoverViewModel not found: $e\n$st');
+    }
+  }
+
+  @override
+  void dispose() {
+    _activityTabWorker?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return VisibilityDetector(
-      key: const Key('activity_brand2_visibility'),
-      onVisibilityChanged: (info) {
-        if (info.visibleFraction >= 0.9) _vm.onPageVisible();
-      },
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.grey.shade100,
         body: Obx(() {
           if (_vm.isLoading && !_vm.cityLoaded) {
@@ -75,7 +98,6 @@ class _ActivityBrand2PageState extends State<ActivityBrand2Page> {
               ),
           );
         }),
-      ),
     );
   }
 

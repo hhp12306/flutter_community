@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../core/base/base_viewmodel.dart';
@@ -61,10 +62,16 @@ class ActivityBrand2ViewModel extends BaseViewModel {
 
   /// 页面首次可见时请求定位，再按定位城市刷新
   Future<void> onPageVisible() async {
-    if (_locationChecked) return;
+    debugPrint('[ActivityBrand2VM] onPageVisible called, _locationChecked=$_locationChecked');
+    if (_locationChecked) {
+      debugPrint('[ActivityBrand2VM] onPageVisible skip (already checked)');
+      return;
+    }
     _locationChecked = true;
+    debugPrint('[ActivityBrand2VM] requestLocation=true -> loadCurrentCity + onRefresh');
     await loadCurrentCity(requestLocation: true);
     await onRefresh();
+    debugPrint('[ActivityBrand2VM] onPageVisible done');
   }
 
   /// 下拉刷新：先加载当前城市活动第一页，完成后再加载更多精彩活动第一页
@@ -231,6 +238,7 @@ class ActivityBrand2ViewModel extends BaseViewModel {
   }
 
   Future<void> loadCurrentCity({bool requestLocation = true}) async {
+    debugPrint('[ActivityBrand2VM] loadCurrentCity requestLocation=$requestLocation');
     final result = await _repository.getCurrentCity(requestLocation: requestLocation);
     result.when(
       success: (city) => _currentCity.value = city,
